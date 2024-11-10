@@ -141,7 +141,7 @@ The RP2040 is programmed using the Arduino IDE with the Earl F. Philhower, III  
 
 6. Click Sketch/Upload.
 
-The Sketch should compile and upload automatically to the Pico. If the upload fails you may need to disconnect the board and then hold down the BOOTSEL button while reconnecting. 
+The Sketch should compile and upload automatically to the Pico. If the upload fails you may need to disconnect the module and then hold down the BOOTSEL button while reconnecting. 
 
 ## Connections
 
