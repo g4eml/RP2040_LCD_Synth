@@ -190,7 +190,11 @@ By default on power up the firmware will immediately send the EEPROM saved regis
 
 In normal use, for example as a Local oscillator or Beacon, that is all that is needed! 
 
-You can program the synthesis using either of two methods. Directly using the config page of the LCD Display or by using the USB serial port using a terminal program such as Putty or Terraterm. Pressing any key should result in the menu being displayed.
+You can program the synthesis using either of the following two methods. 
+
+### Programming directly from the LCD Screen config page. 
+
+### Using the USB serial port and a terminal program such as Putty or Terraterm. Pressing any key should result in the menu being displayed.
 
 ![Screenshot (112)](https://github.com/user-attachments/assets/1e3f835e-65b7-4d6e-8606-7d9504bda405)
 
