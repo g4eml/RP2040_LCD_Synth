@@ -55,11 +55,10 @@ If you wish to use the JT data modes you will also need a GPS module to provide 
 
 All of the various synthesiser moduels use different connectors and pinouts.
 
-The simplest solution is to make an adaptor cable that plugs into the HMI module and fit suitable plugs for the modules to the other end. Keep the wiring as short as possible. Probably no more than 100mm long. 
+The simplest solution is to make an adaptor cable that plugs into the GP connector of the HMI module and fit suitable plugs for the modules to the other end. Keep the wiring as short as possible. Probably no more than 100mm long. 
 
-The power can be provided by the USB-C connector on the end of the HMI module
+The power can be provided by the USB-C connector marked 'USB' on the end of the HMI module
 
-Wiring diagram
 
 
 ## Programming or updating the HMI Module (quick method)
