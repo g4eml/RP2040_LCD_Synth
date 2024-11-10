@@ -36,9 +36,12 @@ Direct output frequency and phase detector frequency entry. Register values are 
 
 This code is designed to work with the Elecrow CrowPanel Pico-3.5 inch 480x320 TFT LCD HMI Module. https://www.aliexpress.com/item/1005007250778536.html 
 
+![LCD_Main](https://github.com/user-attachments/assets/862dfbea-d7c5-44f0-9848-70c811d6a43f)
+
+Note:- similar HMI Panels are available using the ESP32 processor chip. Make sure that you are purchasing the RP2040 version. 
+
 
 Suitable Synthesiser boards are available from Ebay, Amazon, Ali Express, SV1AFN etc. 
-
 
 ![ADF4351](https://github.com/g4eml/RP2040_Synth/assets/1881884/3eacdbbf-ae51-43bd-9b6d-3b69f2eebe77)  ![max2870](https://github.com/g4eml/RP2040_Synth/assets/1881884/94cc4c3b-1bc7-4b79-8cc2-5abb77e51a20)
 
@@ -67,7 +70,7 @@ This can be done either before or after the Syntesiser has been connected, it ma
 
 2. Connect the HMI Module to your PC using the USB-C port on the side. 
 
-3. Hold down the BOOTSEL button on the back of the HMI module and briefly press the Reset button. The RP2040 should appear as a USB disk drive on your PC.
+3. Hold down the BOOT button on the back of the HMI module and briefly press the Reset button. The RP2040 should appear as a USB disk drive on your PC.
 
 3. Copy the .uf2 file onto the USB drive. The RP2040 will recognise the file and immediately update its firmware and reboot.
 
@@ -137,11 +140,11 @@ The RP2040 is programmed using the Arduino IDE with the Earl F. Philhower, III  
 
    USB Stack: "Pico SDK"  
 
-5. Connect the HMI Module to the USB port, hold down the BOOTSEL button and briefly press the reset Button. 
+5. Connect the HMI Module to the USB port, hold down the BOOT button and briefly press the reset Button. 
 
 6. Click Sketch/Upload.
 
-The Sketch should compile and upload automatically to the Pico. If the upload fails you may need to disconnect the module and then hold down the BOOTSEL button while reconnecting. 
+The Sketch should compile and upload automatically to the Pico. If the upload fails you may need to disconnect the module and then hold down the BOOT button while reconnecting. 
 
 ## Connections
 
@@ -186,15 +189,34 @@ An external Morse Key can be connected between GP27 and Ground. This can be conf
 
 ## Firmware description
 
+On first use the screen will show the Touch calibration screen. Follow the instructions and touch each of the four corners of the screen. 
+
 By default on power up the firmware will immediately send the EEPROM saved register values to the sunthesiser chip.  If the CW ident feature is enabled the ident will begin. If the JT mode is enabled the JT sequence will begin. Note that this will initially not be correctly timed. Once the GPS aquires its satellites the timing will synchronise. 
 
-In normal use, for example as a Local oscillator or Beacon, that is all that is needed! 
+## Main Screen
 
-You can program the synthesis using either of the following two methods. 
+![LCD_Main](https://github.com/user-attachments/assets/56206c6a-67a6-4de1-874d-cec92da580d4)
 
-### Programming directly from the LCD Screen config page. 
+The main screen allows entry of output frequency, power setting and output On/Off. 
 
-### Using the USB serial port and a terminal program such as Putty or Terraterm. Pressing any key should result in the menu being displayed.
+To change a value just click on the black box and a pop-up alphabetic or numeric keypad will appear. 
+
+10 separate channels (memories) can be selected. 
+
+The power setting is the value sent to the Synthesiser chip, the available range of values will be chip dependent. See the relevant datasheets for more details. 
+
+Entry to the configuration screen is by the Config button. 
+
+The Save button will save the current settings to the selected Channel. 
+
+## Configuring directly from the LCD Screen config page. 
+
+![LCD_CONFIG](https://github.com/user-attachments/assets/7a5d4b7b-7f5a-4216-963c-416c593c8d08)
+
+Configuration should be straightforward. First select the Synthesiser type, then enter the Reference Oscillator Frequency and PFD.  CW Ident and /or JT Mode can be configured if required. 
+When complete select Exit to return to the main screen. Then on the main screen select Save to save the new settings to EEPROM. 
+
+## Using the USB serial port and a terminal program such as Putty or Terraterm. Pressing any key should result in the menu being displayed.
 
 ![Screenshot (112)](https://github.com/user-attachments/assets/1e3f835e-65b7-4d6e-8606-7d9504bda405)
 
