@@ -147,7 +147,7 @@ The Sketch should compile and upload automatically to the Pico. If the upload fa
 
 The pinout of the various Synthesiser modules tends to vary so it is difficult to give exact wiring diagrams.
 The LMX2595 takes a lot of current so is best supplied from the USB 5V line using its own 3V3 regulator. The other chips can be powered from the 3V3 output of the HMI module. Power arrangements may need additional attention to minimise phase noise. 
-The HMI module does not have a connector for the USB 5V supply. YOu may need to add your own additional wire for this. 
+The HMI module does not have a connector for the USB 5V supply. You may need to add your own additional wire for this. 
 
 The generic wiring instructions are as follows:-
 
