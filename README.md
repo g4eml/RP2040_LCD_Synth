@@ -2,7 +2,7 @@
 
 ## Description
 
-This Project is a development of the RP2040_Synth project with the addition of a Touch screen LCD display module refered to here as the HMI Module (Human Machine Interface). This is intended to be used as a piece of test equipment. 
+This Project is a development of the RP2040_Synth project with the addition of a Touch screen LCD display module, refered to here as the HMI Module (Human Machine Interface). This is intended to be used as a piece of test equipment. 
 Currently supports 3 different type of synthesiser chip, the ADF4351, the Max2870 and the LMX2595.
 
 ## Features
