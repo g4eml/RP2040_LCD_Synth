@@ -99,13 +99,6 @@
   if(raw > 1000)
   {
     bool pressed =tft.getTouch(&t_x, &t_y);
-    if(pressed)
-    {
-      Serial.print("X = ");
-      Serial.print(t_x);
-      Serial.print(" Y = ");
-      Serial.println(t_y);
-    }
     return pressed;
   }
   else

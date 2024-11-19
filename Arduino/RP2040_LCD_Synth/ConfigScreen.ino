@@ -192,11 +192,6 @@ void doConfigScreen(void)
     pressed = tft.getTouch(&t_x, &t_y);
     if(pressed)
     {
-      Serial.print("X = ");
-      Serial.print(t_x);
-      Serial.print(" Y = ");
-      Serial.println(t_y);
-
       if(touchZone(ADF_X, ADF_Y, ADF_W, ADF_H))
       {
         chip = 2;
