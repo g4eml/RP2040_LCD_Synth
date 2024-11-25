@@ -121,11 +121,19 @@
 #define JTM3_W 20
 #define JTM3_H 20
 
+//JTT1
+#define JTT1_LX 10
+#define JTT1_LY 260
+#define JTT1_X 200
+#define JTT1_Y 250
+#define JTT1_W 100
+#define JTT1_H 20
+
 //JTID
 #define JTID_LX 10
-#define JTID_LY 260
+#define JTID_LY 290
 #define JTID_X 90
-#define JTID_Y 250
+#define JTID_Y 280
 #define JTID_W 200
 #define JTID_H 20
 
@@ -165,6 +173,8 @@ void configScreenUpdate(void)
   drawNumBox(CWSH_X, CWSH_Y, CWSH_W, CWSH_H, (chanData[channel].cwidShift * 1000000.0) * (double) chanData[channel].extMult, 0);
   drawLabel(JTID_LX, JTID_LY, "JT Ident", TFT_BLUE,0);
   drawTextBox(JTID_X, JTID_Y, JTID_W, JTID_H, chanData[channel].jtid);
+  drawLabel(JTT1_LX, JTT1_LY, "JT Tone 1 Offset (Hz)", TFT_BLUE,0);
+  drawNumBox(JTT1_X, JTT1_Y, JTT1_W, JTT1_H, chanData[channel].jtTone1 * 1000000.0 , 0);
   drawLabel(JTM0_LX, JTM0_LY, "JT Mode Off", TFT_BLUE,0);
   drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
   drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
@@ -290,6 +300,15 @@ void doConfigScreen(void)
       checkCwValid();
       configScreenUpdate();
       }
+
+      if (touchZone(JTT1_X, JTT1_Y, JTT1_W, JTT1_H)) 
+      {
+      ret = getNumber("Enter Tone 1 Offset (Hz)", 5);
+      chanData[channel].jtTone1 = ret ;
+      chanData[channel].jtTone1 = chanData[channel].jtTone1 / 1000000.0;      //convert to MHz
+      configScreenUpdate();
+      }
+
 
       if (touchZone(JTID_X, JTID_Y, JTID_W, JTID_H)) 
       {
