@@ -631,6 +631,7 @@ void changeChip(void)
     chanData[channel].jtMode = 0;
     chipInit();
     chipSetDefault();
+    chipEncodeRegs();
     for(int c=1 ; c < NUMBEROFCHANNELS;c++)
       {
         chanData[c] = chanData[0];

@@ -161,7 +161,7 @@ void setup()
   gpsPointer = 0;
   delay(1000);
   EEPROM.begin(4096);
-  if(EEPROM.read(0) == 0x57)        //magic number to indcate EEPROM is valid
+  if(EEPROM.read(0) == 0x50)        //magic number to indcate EEPROM is valid
     {
       EEPROM.get(1,chip);              //chip type for all channels
       EEPROM.get(2,selChan);           //read the selected channel. 0xFF if externally switched.
@@ -175,6 +175,10 @@ void setup()
         {
           channel = selChan;          //fix the channel number. 
         } 
+    }
+  else
+    {
+      changeChip();                 //force reset of all channels. 
     }
    chipInit();
    initChannel();
