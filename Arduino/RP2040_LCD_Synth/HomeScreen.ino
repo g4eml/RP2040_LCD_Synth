@@ -2,13 +2,15 @@
 //Frequency 
 #define FREQ_LX 10
 #define FREQ_LY 30
-#define FREQ_X 230
+#define FREQ_X 135
 #define FREQ_Y 5
 #define FREQ_W 240
 #define FREQ_H 50
+#define MHx 395
+#define MHy 30
 
 //Mult 
-#define M_LX 180
+#define M_LX 95
 #define M_LY 35
 
 //Power
@@ -66,8 +68,10 @@
  {
   tft.fillScreen(TFT_CYAN);
   // Draw numeric Boxes
-  drawLabel(FREQ_LX, FREQ_LY, "Frequency", TFT_BLUE,1);
+  drawLabel(FREQ_LX, FREQ_LY, "Freq.", TFT_BLUE,1);
   drawNumBox(FREQ_X, FREQ_Y, FREQ_W, FREQ_H, chipGetFrequency() * chanData[channel].extMult , 6);
+  drawLabel(MHx,MHy,"MHz",TFT_BLUE,1);
+
   if(chanData[channel].extMult > 1)
   {
   char ms[8];
