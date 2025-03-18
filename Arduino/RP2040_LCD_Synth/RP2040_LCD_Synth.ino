@@ -6,6 +6,8 @@
 
 #define VERSION 1.02
 
+#define EEPROMVER 0x51
+
 #define NUMBEROFCHANNELS 10
 
 //Global values...
@@ -161,7 +163,7 @@ void setup()
   gpsPointer = 0;
   delay(1000);
   EEPROM.begin(4096);
-  if(EEPROM.read(0) == 0x50)        //magic number to indcate EEPROM is valid
+  if(EEPROM.read(0) == EEPROMVER)        //magic number to indcate EEPROM is valid
     {
       EEPROM.get(1,chip);              //chip type for all channels
       EEPROM.get(2,selChan);           //read the selected channel. 0xFF if externally switched.
@@ -367,7 +369,7 @@ uint8_t readChannelInputs(void)
 
 void saveSettings(void)
 {
-    EEPROM.write(0, 0x57);         //magic number to indcate EEPROM is valid
+    EEPROM.write(0, EEPROMVER);         //magic number to indcate EEPROM is valid
     EEPROM.put(1,chip);            //save the chip type
     EEPROM.put(2,selChan);         //Save the currently selected channel
     EEPROM.put(3,refOsc);          //reference oscillator for all channels.

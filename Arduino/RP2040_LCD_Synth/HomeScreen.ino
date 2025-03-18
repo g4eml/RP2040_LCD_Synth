@@ -138,8 +138,7 @@
 
   if(touchZone(CHANNEL_X, CHANNEL_Y, CHANNEL_W, CHANNEL_H))
   {
-  ret = getNumber("Enter Channel",1);
-  channel = ret;
+  channel = doMemPad();
   selChan=channel;
   seconds = -1;                       //reset the timing after using the menu.
   milliseconds = 0;
@@ -147,7 +146,6 @@
   chipUpdate();
   return true;
   }
-
 
   if(touchZone(CONFIG_X, CONFIG_Y, CONFIG_W, CONFIG_H))
   {
