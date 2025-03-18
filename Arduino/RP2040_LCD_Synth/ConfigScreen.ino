@@ -138,12 +138,11 @@
 #define JTID_H 20
 
 //exit Button
-#define EXIT_LX 10
-#define EXIT_LY 310
-#define EXIT_X 50
-#define EXIT_Y 300
-#define EXIT_W 20
-#define EXIT_H 20
+
+#define EXIT_X 400
+#define EXIT_Y 290
+#define EXIT_W 70
+#define EXIT_H 30
 
 
 void configScreenUpdate(void) 
@@ -156,25 +155,25 @@ void configScreenUpdate(void)
   drawLabel(LMX_LX, LMX_LY, "LMX2595", TFT_BLUE,0);
   drawOnOff(LMX_X, LMX_Y, LMX_W, LMX_H, chip == 3);
   drawLabel(REF_LX, REF_LY, "Reference Oscillator", TFT_BLUE,0);
-  drawNumBox(REF_X, REF_Y, REF_W, REF_H, refOsc, 6);
+  drawNumBox(REF_X, REF_Y, REF_W, REF_H, refOsc, 6, false);
   drawLabel(PFD_LX, PFD_LY, "PFD", TFT_BLUE,0);
-  drawNumBox(PFD_X, PFD_Y, PFD_W, PFD_H, chipGetPfd(), 6);
+  drawNumBox(PFD_X, PFD_Y, PFD_W, PFD_H, chipGetPfd(), 6, false);
   drawLabel(MULT_LX, MULT_LY, "External Multiplier X", TFT_BLUE,0);
-  drawNumBox(MULT_X, MULT_Y, MULT_W, MULT_H, chanData[channel].extMult, 0);
+  drawNumBox(MULT_X, MULT_Y, MULT_W, MULT_H, chanData[channel].extMult, 0, false);
   drawLabel(KEYSH_LX, KEYSH_LY, "Ext Key FSK Shift (Hz)", TFT_BLUE,0);
-  drawNumBox(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H, (chanData[channel].keyShift * 1000000.0) * (double) chanData[channel].extMult, 0);
+  drawNumBox(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H, (chanData[channel].keyShift * 1000000.0) * (double) chanData[channel].extMult, 0, false);
   drawLabel(CWID_LX, CWID_LY, "CW Ident", TFT_BLUE,0);
-  drawTextBox(CWID_X, CWID_Y, CWID_W, CWID_H, &chanData[channel].cwid[1]);
+  drawTextBox(CWID_X, CWID_Y, CWID_W, CWID_H, &chanData[channel].cwid[1],false,0);
   drawLabel(CWSP_LX, CWSP_LY, "CW Speed (WPM)", TFT_BLUE,0);
-  drawNumBox(CWSP_X, CWSP_Y, CWSP_W, CWSP_H, chanData[channel].cwidSpeed, 0);
+  drawNumBox(CWSP_X, CWSP_Y, CWSP_W, CWSP_H, chanData[channel].cwidSpeed, 0, false);
   drawLabel(CWINT_LX, CWINT_LY, "CW Interval (Secs)", TFT_BLUE,0);
-  drawNumBox(CWINT_X, CWINT_Y, CWINT_W, CWINT_H, chanData[channel].cwidInterval, 0);
+  drawNumBox(CWINT_X, CWINT_Y, CWINT_W, CWINT_H, chanData[channel].cwidInterval, 0, false);
   drawLabel(CWSH_LX, CWSH_LY, "CW FSK Shift (Hz)", TFT_BLUE,0);
-  drawNumBox(CWSH_X, CWSH_Y, CWSH_W, CWSH_H, (chanData[channel].cwidShift * 1000000.0) * (double) chanData[channel].extMult, 0);
+  drawNumBox(CWSH_X, CWSH_Y, CWSH_W, CWSH_H, (chanData[channel].cwidShift * 1000000.0) * (double) chanData[channel].extMult, 0, false);
   drawLabel(JTID_LX, JTID_LY, "JT Ident", TFT_BLUE,0);
-  drawTextBox(JTID_X, JTID_Y, JTID_W, JTID_H, chanData[channel].jtid);
+  drawTextBox(JTID_X, JTID_Y, JTID_W, JTID_H, chanData[channel].jtid,false,0);
   drawLabel(JTT1_LX, JTT1_LY, "JT Tone 1 Offset (Hz)", TFT_BLUE,0);
-  drawNumBox(JTT1_X, JTT1_Y, JTT1_W, JTT1_H, (chanData[channel].jtTone1 * 1000000.0)  * (double) chanData[channel].extMult , 0);
+  drawNumBox(JTT1_X, JTT1_Y, JTT1_W, JTT1_H, (chanData[channel].jtTone1 * 1000000.0)  * (double) chanData[channel].extMult , 0, false);
   drawLabel(JTM0_LX, JTM0_LY, "JT Mode Off", TFT_BLUE,0);
   drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
   drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
@@ -186,8 +185,7 @@ void configScreenUpdate(void)
     drawLabel(JTM3_LX, JTM3_LY, "JT65C", TFT_BLUE,0);
     drawOnOff(JTM3_X, JTM3_Y, JTM3_W, JTM3_H, chanData[channel].jtMode == 3);
     }
-  drawLabel(EXIT_LX, EXIT_LY, "Exit", TFT_BLUE,0);
-  drawOnOff(EXIT_X, EXIT_Y, EXIT_W, EXIT_H, 0);
+  drawTextBox(EXIT_X, EXIT_Y, EXIT_W, EXIT_H, "Exit" , true, 0);
 }
 
 
@@ -209,6 +207,7 @@ void doConfigScreen(void)
         chipEncodeRegs();
         chipUpdate();
         configScreenUpdate();
+        saveRequired = true;
       }
 
       if(touchZone(MAX_X, MAX_Y, MAX_W, MAX_H))
@@ -218,6 +217,7 @@ void doConfigScreen(void)
         chipEncodeRegs();
         chipUpdate();
         configScreenUpdate();
+        saveRequired = true;
       }
 
       if(touchZone(LMX_X, LMX_Y, LMX_W, LMX_H))
@@ -227,6 +227,7 @@ void doConfigScreen(void)
         chipEncodeRegs();
         chipUpdate();
         configScreenUpdate();
+        saveRequired = true;
       }
 
       if (touchZone(REF_X, REF_Y, REF_W, REF_H)) 
@@ -234,6 +235,7 @@ void doConfigScreen(void)
       ret = getNumber("Enter Ref. Freq. (MHz)", 12);
       refOsc = ret;
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(PFD_X, PFD_Y, PFD_W, PFD_H)) 
@@ -244,6 +246,7 @@ void doConfigScreen(void)
       chipSetFrequency(temp);
       chipUpdate();  
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(MULT_X, MULT_Y, MULT_W, MULT_H)) 
@@ -251,6 +254,7 @@ void doConfigScreen(void)
       ret = getNumber("Enter Multiplier", 3);
       chanData[channel].extMult = ret;
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H)) 
@@ -267,6 +271,7 @@ void doConfigScreen(void)
           chanData[channel].fskMode &= NOTEXTKEYBIT;
         }
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(CWID_X, CWID_Y, CWID_W, CWID_H)) 
@@ -274,6 +279,7 @@ void doConfigScreen(void)
       chanData[channel].cwidLen = getText("Enter CWID", &chanData[channel].cwid[1], 32);
       checkCwValid();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(CWSP_X, CWSP_Y, CWSP_W, CWSP_H)) 
@@ -282,6 +288,7 @@ void doConfigScreen(void)
       chanData[channel].cwidSpeed = ret;
       checkCwValid();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(CWINT_X, CWINT_Y, CWINT_W, CWINT_H)) 
@@ -290,6 +297,7 @@ void doConfigScreen(void)
       chanData[channel].cwidInterval = ret;
       checkCwValid();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(CWSH_X, CWSH_Y, CWSH_W, CWSH_H)) 
@@ -299,6 +307,7 @@ void doConfigScreen(void)
       chanData[channel].cwidShift = chanData[channel].cwidShift / 1000000.0;      //convert to MHz
       checkCwValid();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(JTT1_X, JTT1_Y, JTT1_W, JTT1_H)) 
@@ -307,6 +316,7 @@ void doConfigScreen(void)
       chanData[channel].jtTone1 = ret / (double) chanData[channel].extMult ;
       chanData[channel].jtTone1 = chanData[channel].jtTone1 / 1000000.0;      //convert to MHz
       configScreenUpdate();
+      saveRequired = true;
       }
 
 
@@ -315,12 +325,14 @@ void doConfigScreen(void)
       getText("Enter JT ID", &chanData[channel].jtid[0], 13);
       jtInit();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(JTM0_X, JTM0_Y, JTM0_W, JTM0_H)) 
       {
       chanData[channel].jtMode = 0;
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(JTM1_X, JTM1_Y, JTM1_W, JTM1_H)) 
@@ -330,6 +342,7 @@ void doConfigScreen(void)
       milliseconds = 0;
       jtInit();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if ((chip == 3) && (touchZone(JTM2_X, JTM2_Y, JTM2_W, JTM2_H))) 
@@ -339,6 +352,7 @@ void doConfigScreen(void)
       milliseconds = 0;
       jtInit();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if ((chip == 3) && (touchZone(JTM3_X, JTM3_Y, JTM3_W, JTM3_H))) 
@@ -348,6 +362,7 @@ void doConfigScreen(void)
       milliseconds = 0;
       jtInit();
       configScreenUpdate();
+      saveRequired = true;
       }
 
       if (touchZone(EXIT_X, EXIT_Y, EXIT_W, EXIT_H)) 

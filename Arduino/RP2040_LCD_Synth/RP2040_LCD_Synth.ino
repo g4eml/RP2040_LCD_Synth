@@ -6,6 +6,8 @@
 
 #define VERSION 1.02
 
+#define EEPROMVER 0x51
+
 #define NUMBEROFCHANNELS 10
 
 //Global values...
@@ -13,6 +15,7 @@
 enum chip { NONE, MAX2870 , ADF4351 , LMX2595 };
 String chipName[] = {"None","MAX2870", "ADF4351" , "LMX2595"};
 
+bool saveRequired = false;
 
 //These values are saved to the eeprom for recall on statup. 
 //these values alpply to all channels
@@ -161,7 +164,7 @@ void setup()
   gpsPointer = 0;
   delay(1000);
   EEPROM.begin(4096);
-  if(EEPROM.read(0) == 0x57)        //magic number to indcate EEPROM is valid
+  if(EEPROM.read(0) == EEPROMVER)        //magic number to indcate EEPROM is valid
     {
       EEPROM.get(1,chip);              //chip type for all channels
       EEPROM.get(2,selChan);           //read the selected channel. 0xFF if externally switched.
@@ -175,6 +178,10 @@ void setup()
         {
           channel = selChan;          //fix the channel number. 
         } 
+    }
+  else
+    {
+      changeChip();                 //force reset of all channels. 
     }
    chipInit();
    initChannel();
@@ -217,8 +224,9 @@ void loop()
 
 //synchronise the local clock to the GPS clock if available
 
-      if((milliseconds == 500) && (gpsSec != -1) && (gpsActive))
+      if((seconds == 0) && (gpsSec != -1) && (gpsActive))
          {
+          homeScreenUpdate();
           seconds = gpsSec;
           gpsActive = false;
          }
@@ -363,7 +371,7 @@ uint8_t readChannelInputs(void)
 
 void saveSettings(void)
 {
-    EEPROM.write(0, 0x57);         //magic number to indcate EEPROM is valid
+    EEPROM.write(0, EEPROMVER);         //magic number to indcate EEPROM is valid
     EEPROM.put(1,chip);            //save the chip type
     EEPROM.put(2,selChan);         //Save the currently selected channel
     EEPROM.put(3,refOsc);          //reference oscillator for all channels.

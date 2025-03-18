@@ -1,15 +1,25 @@
 
 
-void drawNumBox(int x, int y, int w, int h, double value, int decplaces) 
+void drawNumBox(int x, int y, int w, int h, double value, int decplaces, bool cent) 
 {
   char st[20];
+  int xoff;
 
-  tft.fillRect(x, y, w, h, TFT_BLACK);
-  tft.drawRect(x, y, w, h, TFT_WHITE);
-  tft.setTextColor(TFT_CYAN);
-  tft.setTextDatum(CL_DATUM);
+  tft.fillRoundRect(x, y, w, h, h/4, TFT_BLUE);
+  tft.drawRoundRect(x, y, w, h, h/4, TFT_WHITE);
+  tft.setTextColor(TFT_WHITE);
+  if(cent)
+  {
+    tft.setTextDatum(CC_DATUM);
+    xoff = x+w/2;
+  }
+  else
+  {
+    tft.setTextDatum(CL_DATUM);
+    xoff = x+h/4; 
+  }
   sprintf(st, "%.*f", decplaces, value);
-  tft.drawString(st, x + h/4, y + h / 2);
+  tft.drawString(st, xoff, y + h / 2);
 }
 
 
@@ -27,14 +37,31 @@ void drawLabel(int x, int y, const char* label, int colour, bool size)
   tft.drawString(label, x, y);
 }
 
-void drawTextBox(int x, int y, int w, int h, const char* text) 
+void drawTextBox(int x, int y, int w, int h, const char* text, bool cent, bool size) 
 {
 
-  tft.fillRect(x, y, w, h, TFT_BLACK);
-  tft.drawRect(x, y, w, h, TFT_WHITE);
-  tft.setTextColor(TFT_CYAN);
-  tft.setTextDatum(CL_DATUM);
-  tft.drawString(text, x + h/4, y + h / 2);
+  int xoff;
+  tft.fillRoundRect(x, y, w, h, h/4, TFT_BLUE);
+  tft.drawRoundRect(x, y, w, h, h/4, TFT_WHITE);
+  tft.setTextColor(TFT_WHITE);
+  if (size) 
+  {
+    tft.setFreeFont(&FreeSans18pt7b);
+  } else 
+  {
+    tft.setFreeFont(&FreeSans9pt7b);
+  }
+  if(cent)
+  {
+    tft.setTextDatum(CC_DATUM);
+    xoff = x+w/2;
+  }
+  else
+  {
+    tft.setTextDatum(CL_DATUM);
+    xoff = x+h/4;
+  }
+  tft.drawString(text, xoff, y + h / 2);
 }
 
 void drawOnOff(int x, int y, int w, int h, bool on) 
@@ -50,8 +77,8 @@ void drawOnOff(int x, int y, int w, int h, bool on)
     col = TFT_RED;
   }
   tft.setTextColor(TFT_BLUE);
-  tft.fillRect(x, y, w, h, col);
-  tft.drawRect(x, y, w, h, TFT_WHITE);
+  tft.fillRoundRect(x, y, w, h, h/4, col);
+  tft.drawRoundRect(x, y, w, h, h/4, TFT_WHITE);
 }
 
 bool touchZone(int x, int y, int w, int h) 
