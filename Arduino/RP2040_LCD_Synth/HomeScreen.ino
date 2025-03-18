@@ -40,28 +40,23 @@
 
 
 //Configure Button
-#define CONFIG_LX 10
-#define CONFIG_LY 310
-#define CONFIG_X 70
-#define CONFIG_Y 300
-#define CONFIG_W 20
-#define CONFIG_H 20
+#define CONFIG_X 10
+#define CONFIG_Y 290
+#define CONFIG_W 70
+#define CONFIG_H 30
 
 //Sync time  Button
-#define SYNC_LX 270
-#define SYNC_LY 310
-#define SYNC_X 360
-#define SYNC_Y 300
-#define SYNC_W 20
-#define SYNC_H 20
+#define SYNC_X 280
+#define SYNC_Y 290
+#define SYNC_W 100
+#define SYNC_H 30
 
 //Save Button
-#define SAVE_LX 400
-#define SAVE_LY 310
-#define SAVE_X 450
-#define SAVE_Y 300
-#define SAVE_W 20
-#define SAVE_H 20
+
+#define SAVE_X 400
+#define SAVE_Y 290
+#define SAVE_W 70
+#define SAVE_H 30
 
 
  void homeScreenUpdate(void)
@@ -84,17 +79,19 @@
   drawOnOff(OUT_X, OUT_Y, OUT_W, OUT_H, chipGetOutput());
   drawLabel(CHANNEL_LX, CHANNEL_LY, "Channel", TFT_BLUE, 1);
   drawNumBox(CHANNEL_X, CHANNEL_Y, CHANNEL_W, CHANNEL_H, channel , 0, true);
-  drawLabel(CONFIG_LX, CONFIG_LY, "Config", TFT_BLUE,0);
-  drawOnOff(CONFIG_X, CONFIG_Y, CONFIG_W, CONFIG_H, 0);
+  drawTextBox(CONFIG_X, CONFIG_Y, CONFIG_W, CONFIG_H, "Config" , true, 0);
 
-  if((chanData[channel].fskMode & CWIDBIT) || (chanData[channel].jtMode >0))
+
+  if(!gpsActive && ((chanData[channel].fskMode & CWIDBIT) || (chanData[channel].jtMode >0)))
   {
-  drawLabel(SYNC_LX, SYNC_LY, "Sync Time", TFT_BLUE,0);
-  drawOnOff(SYNC_X, SYNC_Y, SYNC_W, SYNC_H, 0);
+  drawTextBox(SYNC_X, SYNC_Y, SYNC_W, SYNC_H, "Sync Time" , true, 0);
   }
 
-  drawLabel(SAVE_LX, SAVE_LY, "Save", TFT_BLUE,0);
-  drawOnOff(SAVE_X, SAVE_Y, SAVE_W, SAVE_H, 0);
+  if(saveRequired)
+  {
+    drawTextBox(SAVE_X, SAVE_Y, SAVE_W, SAVE_H, "Save" , true, 0);
+  }
+
  }
 
  bool homeScreenTouched(void)
@@ -120,6 +117,7 @@
   ret = getNumber("Enter Frequency" , 12);
   chipSetFrequency(ret / chanData[channel].extMult);
   chipUpdate();
+  saveRequired = true;
   return true;
   }
 
@@ -127,12 +125,14 @@
   {
   ret = getNumber("Enter Power",3);
   chipSetPower(ret);
+  saveRequired = true;
   return true;
   }
 
   if(touchZone(OUT_X, OUT_Y, OUT_W, OUT_H))
   {
   chipEnableOutput(!chipGetOutput());
+  saveRequired = true;
   return true;
   }
 
@@ -144,6 +144,7 @@
   milliseconds = 0;
   initChannel();
   chipUpdate();
+  saveRequired = true;
   return true;
   }
 
@@ -164,7 +165,8 @@
 
   if(touchZone(SAVE_X, SAVE_Y, SAVE_W, SAVE_H))
   {
-  saveSettings();;
+  saveSettings();
+  saveRequired = false;
   return true;
   }
 

@@ -15,6 +15,7 @@
 enum chip { NONE, MAX2870 , ADF4351 , LMX2595 };
 String chipName[] = {"None","MAX2870", "ADF4351" , "LMX2595"};
 
+bool saveRequired = false;
 
 //These values are saved to the eeprom for recall on statup. 
 //these values alpply to all channels
@@ -223,8 +224,9 @@ void loop()
 
 //synchronise the local clock to the GPS clock if available
 
-      if((milliseconds == 500) && (gpsSec != -1) && (gpsActive))
+      if((seconds == 0) && (gpsSec != -1) && (gpsActive))
          {
+          homeScreenUpdate();
           seconds = gpsSec;
           gpsActive = false;
          }

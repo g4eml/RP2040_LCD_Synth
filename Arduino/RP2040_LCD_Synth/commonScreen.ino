@@ -37,13 +37,20 @@ void drawLabel(int x, int y, const char* label, int colour, bool size)
   tft.drawString(label, x, y);
 }
 
-void drawTextBox(int x, int y, int w, int h, const char* text, bool cent) 
+void drawTextBox(int x, int y, int w, int h, const char* text, bool cent, bool size) 
 {
 
   int xoff;
   tft.fillRoundRect(x, y, w, h, h/4, TFT_BLUE);
   tft.drawRoundRect(x, y, w, h, h/4, TFT_WHITE);
   tft.setTextColor(TFT_WHITE);
+  if (size) 
+  {
+    tft.setFreeFont(&FreeSans18pt7b);
+  } else 
+  {
+    tft.setFreeFont(&FreeSans9pt7b);
+  }
   if(cent)
   {
     tft.setTextDatum(CC_DATUM);
