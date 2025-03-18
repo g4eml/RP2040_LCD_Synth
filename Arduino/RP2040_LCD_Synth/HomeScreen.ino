@@ -69,7 +69,7 @@
   tft.fillScreen(TFT_CYAN);
   // Draw numeric Boxes
   drawLabel(FREQ_LX, FREQ_LY, "Freq.", TFT_BLUE,1);
-  drawNumBox(FREQ_X, FREQ_Y, FREQ_W, FREQ_H, chipGetFrequency() * chanData[channel].extMult , 6);
+  drawNumBox(FREQ_X, FREQ_Y, FREQ_W, FREQ_H, chipGetFrequency() * chanData[channel].extMult , 6,true);
   drawLabel(MHx,MHy,"MHz",TFT_BLUE,1);
 
   if(chanData[channel].extMult > 1)
@@ -79,11 +79,11 @@
   drawLabel(M_LX, M_LY, ms, TFT_BLUE,0); 
   }
   drawLabel(POWER_LX, POWER_LY, "Power", TFT_BLUE, 1);
-  drawNumBox(POWER_X, POWER_Y, POWER_W, POWER_H, chipGetPower() , 0);
+  drawNumBox(POWER_X, POWER_Y, POWER_W, POWER_H, chipGetPower() , 0, true);
   drawLabel(OUT_LX, OUT_LY, "Output", TFT_BLUE,1);  
   drawOnOff(OUT_X, OUT_Y, OUT_W, OUT_H, chipGetOutput());
   drawLabel(CHANNEL_LX, CHANNEL_LY, "Channel", TFT_BLUE, 1);
-  drawNumBox(CHANNEL_X, CHANNEL_Y, CHANNEL_W, CHANNEL_H, channel , 0);
+  drawNumBox(CHANNEL_X, CHANNEL_Y, CHANNEL_W, CHANNEL_H, channel , 0, true);
   drawLabel(CONFIG_LX, CONFIG_LY, "Config", TFT_BLUE,0);
   drawOnOff(CONFIG_X, CONFIG_Y, CONFIG_W, CONFIG_H, 0);
 

@@ -10,8 +10,7 @@
 #define MEMKEY_SPACING_Y 12
 #define MEMKEY_TEXTSIZE 1   // Font size multiplier
 
-// Using two fonts since numbers are nice when bold
-#define MEMLABEL_FONT &FreeSansBold12pt7b    // Key label font 2
+#define MEMLABEL_FONT &FreeSansBold12pt7b    // Button label font
 
 
 
