@@ -88,6 +88,13 @@
 #define CWSH_W 100
 #define CWSH_H 20
 
+//CW Enable
+#define CWEN_LX 300
+#define CWEN_LY 200
+#define CWEN_X 380
+#define CWEN_Y 190
+#define CWEN_W 20
+#define CWEN_H 20
 
 //JTmode 0
 #define JTM0_LX 10
@@ -170,6 +177,8 @@ void configScreenUpdate(void)
   drawNumBox(CWINT_X, CWINT_Y, CWINT_W, CWINT_H, chanData[channel].cwidInterval, 0, false);
   drawLabel(CWSH_LX, CWSH_LY, "CW FSK Shift (Hz)", TFT_BLUE,0);
   drawNumBox(CWSH_X, CWSH_Y, CWSH_W, CWSH_H, (chanData[channel].cwidShift * 1000000.0) * (double) chanData[channel].extMult, 0, false);
+  drawLabel(CWEN_LX, CWEN_LY, "CWID On", TFT_BLUE,0);
+  drawOnOff(CWEN_X, CWEN_Y, CWEN_W, CWEN_H, chanData[channel].fskMode & CWIDBIT);
   drawLabel(JTID_LX, JTID_LY, "JT Ident", TFT_BLUE,0);
   drawTextBox(JTID_X, JTID_Y, JTID_W, JTID_H, chanData[channel].jtid,false,0);
   drawLabel(JTT1_LX, JTT1_LY, "JT Tone 1 Offset (Hz)", TFT_BLUE,0);
@@ -306,6 +315,20 @@ void doConfigScreen(void)
       chanData[channel].cwidShift = ret / (double) chanData[channel].extMult ;
       chanData[channel].cwidShift = chanData[channel].cwidShift / 1000000.0;      //convert to MHz
       checkCwValid();
+      configScreenUpdate();
+      saveRequired = true;
+      }
+
+      if (touchZone(CWEN_X, CWEN_Y, CWEN_W, CWEN_H)) 
+      {
+      if(chanData[channel].fskMode & CWIDBIT)
+        {
+          chanData[channel].fskMode &= NOTCWIDBIT;
+        }
+      else
+        {
+          checkCwValid();
+        }      
       configScreenUpdate();
       saveRequired = true;
       }
