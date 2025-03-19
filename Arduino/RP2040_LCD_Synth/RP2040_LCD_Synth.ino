@@ -134,8 +134,15 @@ char gpsBuffer[256];                     //GPS data buffer
 int gpsPointer;                          //GPS buffer pointer. 
 char gpsCh;
 int gpsSec = -1;                         //gps Seconds counter 0-59 is even minute, 60-119 is odd minute. -1 is GPS Invalid 
-bool gpsActive = false;                    
+bool gpsActive = false; 
+int lastsec=0;
+int gpsH=0;
+int gpsM=0;
+int gpsS=0;            
 
+bool showSync=false;
+bool showingGPS = false;
+int gpstimeout =0;
 
 #if defined(LCDVERSION)
 
@@ -160,7 +167,7 @@ void setup()
 
   pinMode(EXTKEYPin, INPUT_PULLUP);     //configure the external Key Input
 
-  Serial1.begin(9600);                  //start GPS port comms
+  Serial1.begin(9600);                  //start GPS port comms on pins 0 and 1
   gpsPointer = 0;
   delay(1000);
   EEPROM.begin(4096);
@@ -222,14 +229,33 @@ void loop()
           }
       }
 
+     if((gpsSec !=-1)&&(gpsS != lastsec))
+       {
+        lastsec=gpsS;
+        displayGPS();
+        showingGPS = true;
+        gpstimeout = 0;
+        if(gpsSec != seconds) 
+         {
+          seconds = gpsSec;
+          milliseconds = 500;
+         }      
+       }
+
+    if(showingGPS)
+    {
+      gpstimeout++;
+    }
+
+    if((gpstimeout > 10000) && (showingGPS))
+      {
+        showingGPS = false;
+        gpsSec = -1;
+        homeScreenUpdate();
+      }
+
 //synchronise the local clock to the GPS clock if available
 
-      if((seconds == 0) && (gpsSec != -1) && (gpsActive))
-         {
-          homeScreenUpdate();
-          seconds = gpsSec;
-          gpsActive = false;
-         }
 
      if(selChan == 255)             //external chaannel selection
        {
@@ -286,7 +312,7 @@ void loop()
        flushInput();
      }
     
-    if(Serial1.available() > 0)           //data received from GPS module
+    if(Serial1.available() > 0)           //data received from GPS module on pins 0 and 1
       {
         while(Serial1.available() >0)
           {
@@ -301,6 +327,7 @@ void loop()
           }
 
       }
+
 
 #if defined(LCDVERSION)
    if(homeScreenTouched())
@@ -341,15 +368,18 @@ void processNMEA(void)
 {
   float gpsTime;
 
- gpsActive = true;
  if(strstr(gpsBuffer , "RMC") != NULL)                         //is this the RMC sentence?
   {
-    if(strstr(gpsBuffer , "A") != NULL)                       // is the data valid?
+    if(strstr(gpsBuffer , ",A,") != NULL)                       // is the data valid?
       {
        int p=strcspn(gpsBuffer , ",");                         // find the first comma
        gpsTime = strtof(gpsBuffer+p+1 , NULL);                 //copy the time to a floating point number
        gpsSec = 60 * ((int(gpsTime) / 100) % 2);                 // count odd and even minutes
-       gpsSec = gpsSec + (int(gpsTime) % 100);  
+       gpsSec = gpsSec + (int(gpsTime) % 100); 
+       gpsH=int(gpsTime)/10000;
+       gpsM=(int(gpsTime)/100) % 100;
+       gpsS= int(gpsTime) % 100;
+       gpsActive = true;
       }
     else
      {
