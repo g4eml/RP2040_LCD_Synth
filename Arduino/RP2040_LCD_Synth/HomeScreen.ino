@@ -38,6 +38,9 @@
 #define CHANNEL_W 50
 #define CHANNEL_H 50
 
+//GPS
+#define GPS_X 200
+#define GPS_Y 305
 
 //Configure Button
 #define CONFIG_X 10
@@ -82,9 +85,10 @@
   drawTextBox(CONFIG_X, CONFIG_Y, CONFIG_W, CONFIG_H, "Config" , true, 0);
 
 
-  if(!gpsActive && ((chanData[channel].fskMode & CWIDBIT) || (chanData[channel].jtMode >0)))
+  if(!showingGPS && ((chanData[channel].fskMode & CWIDBIT) || (chanData[channel].jtMode >0)))
   {
   drawTextBox(SYNC_X, SYNC_Y, SYNC_W, SYNC_H, "Sync Time" , true, 0);
+  showSync = true;
   }
 
   if(saveRequired)
@@ -92,6 +96,19 @@
     drawTextBox(SAVE_X, SAVE_Y, SAVE_W, SAVE_H, "Save" , true, 0);
   }
 
+ }
+
+ void displayGPS(void)
+ {
+      if(showSync)
+    {
+      tft.fillRect(SYNC_X, SYNC_Y, SYNC_W, SYNC_H, TFT_CYAN);
+      showSync = false; 
+    }
+    char gpsstr[20];
+    tft.fillRect(GPS_X+100, GPS_Y-8, 90, 16, TFT_CYAN);
+    sprintf(gpsstr,"GPS Time = %02d:%02d:%02d",gpsH,gpsM,gpsS);
+    drawLabel(GPS_X, GPS_Y, gpsstr, TFT_BLUE,0); 
  }
 
  bool homeScreenTouched(void)
