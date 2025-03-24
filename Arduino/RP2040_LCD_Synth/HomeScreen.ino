@@ -105,7 +105,7 @@
       tft.fillRect(SYNC_X, SYNC_Y, SYNC_W, SYNC_H, TFT_CYAN);
       showSync = false; 
     }
-    char gpsstr[20];
+    char gpsstr[24];
     tft.fillRect(GPS_X+100, GPS_Y-8, 90, 16, TFT_CYAN);
     sprintf(gpsstr,"Time (UTC) = %02d:%02d:%02d",gpsH,gpsM,gpsS);
     drawLabel(GPS_X, GPS_Y, gpsstr, TFT_BLUE,0); 
