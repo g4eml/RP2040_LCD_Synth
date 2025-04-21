@@ -4,7 +4,7 @@
 
 #define LCDVERSION
 
-#define VERSION 1.06
+#define VERSION 1.07
 
 #define EEPROMVER 0x51
 
@@ -197,7 +197,16 @@ void setup()
 #if defined(LCDVERSION)
   tft.init();
   tft.setRotation(1);
-  touch_calibrate(0);
+  if(homeScreenTouched())
+   {
+    while(homeScreenTouched());
+    delay(1000);
+    touch_calibrate(1);
+   }
+   else
+   {
+    touch_calibrate(0);
+   }
   homeScreenUpdate();
 #endif
 
