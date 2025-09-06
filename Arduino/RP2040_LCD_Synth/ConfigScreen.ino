@@ -312,7 +312,7 @@ void doConfigScreen(void)
       if (touchZone(CWSH_X, CWSH_Y, CWSH_W, CWSH_H)) 
       {
       ret = getNumber("Enter CW ID FSK (Hz)", 5);
-      chanData[channel].cwidShift = ret / (double) chanData[channel].extMult ;
+      chanData[channel].cwidShift = ret ;
       chanData[channel].cwidShift = chanData[channel].cwidShift / 1000000.0;      //convert to MHz
       checkCwValid();
       configScreenUpdate();
