@@ -364,7 +364,7 @@ void setjtMode(void)
   if(chanData[channel].jtMode != 0)
     {
       Serial.print("Enter Tone 1 Offset from Carrier Frequency (Hz) --->");
-      chanData[channel].jtTone1 = inputNumber() / (double) chanData[channel].extMult ;
+      chanData[channel].jtTone1 = inputNumber() ;
       chanData[channel].jtTone1 = chanData[channel].jtTone1 / 1000000.0;      //convert to MHz
       char temp[14]; 
       Serial.print("Enter JT Message (Max 13 characters) --->");
@@ -418,10 +418,10 @@ void setKeyMode(void)
        Serial.print("Enter FSK Shift in Hz ---> ");
      }
 
-  chanData[channel].keyShift = inputNumber() / (double) chanData[channel].extMult ;
+  chanData[channel].keyShift = inputNumber() ;
   chanData[channel].keyShift = chanData[channel].keyShift / 1000000.0;      //convert to MHz
   double nominal = chipGetFrequency();
-  chipSetFrequency(nominal + (double) chanData[channel].keyShift);
+  chipSetFrequency(nominal + (double) chanData[channel].keyShift / (double) chanData[channel].extMult);
   chipSaveKeyShift();
   Serial.println("\nActual Final Multiplied Frequencies achievable with the current PFD will be :-");
   Serial.print("Key Down Frequency = ");

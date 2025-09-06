@@ -168,7 +168,7 @@ void configScreenUpdate(void)
   drawLabel(MULT_LX, MULT_LY, "External Multiplier X", TFT_BLUE,0);
   drawNumBox(MULT_X, MULT_Y, MULT_W, MULT_H, chanData[channel].extMult, 0, false);
   drawLabel(KEYSH_LX, KEYSH_LY, "Ext Key FSK Shift (Hz)", TFT_BLUE,0);
-  drawNumBox(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H, (chanData[channel].keyShift * 1000000.0) * (double) chanData[channel].extMult, 0, false);
+  drawNumBox(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H, (chanData[channel].keyShift * 1000000.0), 0, false);
   drawLabel(CWID_LX, CWID_LY, "CW Ident", TFT_BLUE,0);
   drawTextBox(CWID_X, CWID_Y, CWID_W, CWID_H, &chanData[channel].cwid[1],false,0);
   drawLabel(CWSP_LX, CWSP_LY, "CW Speed (WPM)", TFT_BLUE,0);
@@ -176,13 +176,13 @@ void configScreenUpdate(void)
   drawLabel(CWINT_LX, CWINT_LY, "CW Interval (Secs)", TFT_BLUE,0);
   drawNumBox(CWINT_X, CWINT_Y, CWINT_W, CWINT_H, chanData[channel].cwidInterval, 0, false);
   drawLabel(CWSH_LX, CWSH_LY, "CW FSK Shift (Hz)", TFT_BLUE,0);
-  drawNumBox(CWSH_X, CWSH_Y, CWSH_W, CWSH_H, (chanData[channel].cwidShift * 1000000.0) * (double) chanData[channel].extMult, 0, false);
+  drawNumBox(CWSH_X, CWSH_Y, CWSH_W, CWSH_H, (chanData[channel].cwidShift * 1000000.0), 0, false);
   drawLabel(CWEN_LX, CWEN_LY, "CWID On", TFT_BLUE,0);
   drawOnOff(CWEN_X, CWEN_Y, CWEN_W, CWEN_H, chanData[channel].fskMode & CWIDBIT);
   drawLabel(JTID_LX, JTID_LY, "JT Ident", TFT_BLUE,0);
   drawTextBox(JTID_X, JTID_Y, JTID_W, JTID_H, chanData[channel].jtid,false,0);
   drawLabel(JTT1_LX, JTT1_LY, "JT Tone 1 Offset (Hz)", TFT_BLUE,0);
-  drawNumBox(JTT1_X, JTT1_Y, JTT1_W, JTT1_H, (chanData[channel].jtTone1 * 1000000.0)  * (double) chanData[channel].extMult , 0, false);
+  drawNumBox(JTT1_X, JTT1_Y, JTT1_W, JTT1_H, (chanData[channel].jtTone1 * 1000000.0) , 0, false);
   drawLabel(JTM0_LX, JTM0_LY, "JT Mode Off", TFT_BLUE,0);
   drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
   drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
@@ -269,7 +269,7 @@ void doConfigScreen(void)
       if (touchZone(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H)) 
       {
       ret = getNumber("Enter Ext Key FSK (Hz)", 5);
-      chanData[channel].keyShift = ret / (double) chanData[channel].extMult ;
+      chanData[channel].keyShift = ret ;
       chanData[channel].keyShift = chanData[channel].keyShift / 1000000.0;      //convert to MHz
       if(chanData[channel].keyShift != 0)
         {
@@ -336,7 +336,7 @@ void doConfigScreen(void)
       if (touchZone(JTT1_X, JTT1_Y, JTT1_W, JTT1_H)) 
       {
       ret = getNumber("Enter Tone 1 Offset (Hz)", 5);
-      chanData[channel].jtTone1 = ret / (double) chanData[channel].extMult ;
+      chanData[channel].jtTone1 = ret ;
       chanData[channel].jtTone1 = chanData[channel].jtTone1 / 1000000.0;      //convert to MHz
       configScreenUpdate();
       saveRequired = true;
