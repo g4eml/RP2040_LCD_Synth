@@ -61,6 +61,26 @@
 #define SAVE_W 70
 #define SAVE_H 30
 
+//Voltage Display
+#define VOLT_X 170
+#define VOLT_Y 310
+#define VOLT_W 70
+#define VOLT_H 30
+
+void displayVolts(void)
+{
+  uint16_t vbat = 0;
+  for(int i=0;i<10;i++)
+   {
+    vbat = vbat + analogRead(A3);
+   }
+  vbat=vbat /10;
+  char vstr[24];
+  tft.fillRect(VOLT_X, VOLT_Y-10, VOLT_W, VOLT_H, TFT_CYAN);
+  sprintf(vstr,"%0.2f V",(float) vbat/147.0);
+  drawLabel(VOLT_X, VOLT_Y, vstr, TFT_BLUE,0);
+
+}
 
  void homeScreenUpdate(void)
  {

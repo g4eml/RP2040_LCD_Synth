@@ -156,7 +156,7 @@ uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
 
 void setup() 
 {
-  Serial.begin();                       //USB serial port
+  Serial.begin(9600);                       //USB serial port
   Serial1.setRX(GPSRXPin);              //Configure the GPIO pins for the GPS module
   Serial1.setTX(GPSTXPin);
 
@@ -164,10 +164,10 @@ void setup()
   pinMode(CHANSEL1Pin, INPUT_PULLUP);   //Inverted logic to allow switches to ground. 
   pinMode(CHANSEL2Pin, INPUT_PULLUP);
   pinMode(CHANSEL3Pin, INPUT_PULLUP);
-
   pinMode(EXTKEYPin, INPUT_PULLUP);     //configure the external Key Input
 
   Serial1.begin(9600);                  //start GPS port comms on pins 0 and 1
+
   gpsPointer = 0;
   delay(1000);
   EEPROM.begin(4096);
@@ -236,6 +236,7 @@ void loop()
           {
             seconds = 0;
           }
+        displayVolts();
       }
 
      if((gpsSec !=-1)&&(gpsS != lastsec))
