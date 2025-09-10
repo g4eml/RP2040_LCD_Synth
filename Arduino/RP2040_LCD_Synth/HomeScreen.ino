@@ -69,7 +69,7 @@
 
 #define BATCAL 588.0
 
-void displayVolts(void)
+float getVolts(void)
 {
   uint16_t vbat = 0;
   for(int i=0;i<10;i++)
@@ -77,9 +77,15 @@ void displayVolts(void)
     vbat = vbat + analogRead(A3);
    }
   vbat=vbat /10;
+  return (float) vbat/BATCAL;
+}
+
+void displayVolts(void)
+{
+  float vbat = getVolts();
   char vstr[24];
   tft.fillRect(VOLT_X, VOLT_Y-10, VOLT_W, VOLT_H, TFT_CYAN);
-  sprintf(vstr,"Bat:- %0.2f V",(float) vbat/BATCAL);
+  sprintf(vstr,"Bat:- %0.2f V",vbat);
   drawLabel(VOLT_X, VOLT_Y, vstr, TFT_BLUE,0);
 }
 
@@ -117,6 +123,7 @@ void displayVolts(void)
     drawTextBox(SAVE_X, SAVE_Y, SAVE_W, SAVE_H, "Save" , true, 0);
   }
 
+  if(batPresent) displayVolts();
  }
 
  void displayGPS(void)

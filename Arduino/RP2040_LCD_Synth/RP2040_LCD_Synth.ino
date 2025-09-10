@@ -17,6 +17,8 @@ String chipName[] = {"None","MAX2870", "ADF4351" , "LMX2595"};
 
 bool saveRequired = false;
 
+bool batPresent = false;
+
 //These values are saved to the eeprom for recall on statup. 
 //these values alpply to all channels
 
@@ -159,6 +161,7 @@ void setup()
   Serial.begin(9600);                       //USB serial port
 
   analogReadResolution(12);
+  if(getVolts() > 4.15) batPresent = false; else batPresent = true;
   Serial1.setRX(GPSRXPin);              //Configure the GPIO pins for the GPS module
   Serial1.setTX(GPSTXPin);
 
@@ -238,7 +241,7 @@ void loop()
           {
             seconds = 0;
           }
-        displayVolts();
+        if(batPresent) displayVolts();
       }
 
      if((gpsSec !=-1)&&(gpsS != lastsec))
