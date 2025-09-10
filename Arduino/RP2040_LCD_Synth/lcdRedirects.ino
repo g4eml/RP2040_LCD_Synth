@@ -39,7 +39,8 @@
           break;
 
           case LMX2595:
-          LMX2595_OUTA_PD = !o;
+            digitalWrite(LMX2595CEPin,o);
+            LMX2595_OUTA_PD = !o;
           break;
         }
      chipEncodeRegs();

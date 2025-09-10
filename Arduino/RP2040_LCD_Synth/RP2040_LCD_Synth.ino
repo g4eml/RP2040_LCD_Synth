@@ -157,6 +157,8 @@ uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
 void setup() 
 {
   Serial.begin(9600);                       //USB serial port
+
+  analogReadResolution(12);
   Serial1.setRX(GPSRXPin);              //Configure the GPIO pins for the GPS module
   Serial1.setTX(GPSTXPin);
 
@@ -311,6 +313,16 @@ void loop()
 
       if(Serial.available() > 0 )          //test for USB command connected
      {
+        bool valid = false;
+         while(Serial.available())
+         {
+           if(Serial.read() == 13)
+            {
+              valid = true;
+            }
+         }
+       if(!valid) return;
+
        chipExtKey(true);                    //reset to nominal carrier frequency
        mainMenu();                         //timing loop stops while the menu system is running.
        seconds = -1;                       //reset the timing after using the menu.
