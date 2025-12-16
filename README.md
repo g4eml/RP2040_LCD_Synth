@@ -17,11 +17,11 @@ Settings are saved to EEPROM for automatic load on power on.
 
 Support for FSK CW Identification for beacon use.
 
-Supports JT data modes for Beacon Identification.  JT4G is available on all chip types. JT65B and JT65C are only available on the LMX2595.
+Supports data modes for Beacon Identification.  JT4G is available on all chip types. Q65-30B is only available on the LMX2595.
 
 Note:- Whilst JT4G mode is available on all chips there may be some limitations. The ADF4351 and MAX2870 chips have a limited frequency resolution and may not be able to accurately set the required tone frequencies especially when an external multiplication chain is used.
 
-Supports GPS connection for the accurate timing required for JT data modes. 
+Supports GPS connection for the accurate timing required for data modes. 
 
 Supports 10 different channels which can also be selected by external switches. 
 
@@ -49,7 +49,7 @@ Suitable Synthesiser boards are available from Ebay, Amazon, Ali Express, SV1AFN
 
 ![lmx2595](https://github.com/g4eml/RP2040_Synth/assets/1881884/57675dc3-57eb-4d40-87e9-84847eca80ed) ![SV1AFN](https://github.com/g4eml/RP2040_Synth/assets/1881884/6c4bbb31-debc-4be2-bb3c-899d4c1da64c)
 
-If you wish to use the JT data modes you will also need a GPS module to provide the necessary accurate timing.  
+If you wish to use the data modes you will also need a GPS module to provide the necessary accurate timing.  
 
 ![GPS](https://github.com/user-attachments/assets/53ceb650-0525-4138-a7ff-bff1f450c409)
 
@@ -168,7 +168,7 @@ The generic wiring instructions are as follows:-
 |GPO6    |   CLK   |   CLK   |   SCK   |
 |GPO7    |   DAT   |   DATA  |   SDI   |
 
-The firmware also supports the optional connection of a GPS module. This is used to accurately set the time, which is needed for the JT modes. It is not needed for Local Oscillator or a CW only beacon. Any GPS module with a 3V3 output can be used. It needs to output NMEA data at 9600 Baud. One of the low cost NEO6M modules was used for development. 
+The firmware also supports the optional connection of a GPS module. This is used to accurately set the time, which is needed for the data modes. It is not needed for Local Oscillator or a CW only beacon. Any GPS module with a 3V3 output can be used. It needs to output NMEA data at 9600 Baud. One of the low cost NEO6M modules was used for development. 
 
 | HMI Module | GPS Module |
 | :---:  |    :---:   |
@@ -253,7 +253,7 @@ R = View / Enter Registers Directly in Hex. Allws direct entry of regiser values
 
 I = Configure CW Ident. Alows entry of CW Ident, CW Speed, Ident Period and FSK Shift.  A shift of -800Hz is a typical value. Ident period is only valid for a CW only configuration. If a JT mode is also enbled then the CW ident will be sent every odd minute. 
 
-J = Configure JT modes. Allows entry of a 13 character message. This would normally be the Callsign and Maidenhead locator. The JT ident will be sent every Even minute. Accurate timing requires a GPS module to be connected.
+J = Configure data modes. Allows entry of a 13 character message for JT4G. This would normally be the Callsign and Maidenhead locator. For Q65 this must be the callsign and 4 character locator. The ident will be sent every Even minute. Accurate timing requires a GPS module to be connected.
 
 K = Configure External Key. An External Morse key can be connected and used to frequency shift the signal. The FSK Shift can be entered and is seperate from the CWID shift. 
 
@@ -264,4 +264,5 @@ S = Save Registers to EEPROM. Saves the current Synthesiser settings to EEPROM. 
 X = Exit Menu. Exits from the menu, re-initialises the Synthesiser and starts the CW Ident. 
 
 ## 
+
 
