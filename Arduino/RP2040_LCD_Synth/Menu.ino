@@ -2,10 +2,9 @@
 
 void flushInput(void)
 {
-  char dummy;
    while(Serial.available())
    {
-    dummy = Serial.read();
+    Serial.read();
    }
 }
 
@@ -179,7 +178,6 @@ void enterOsc(void)
 void enterRegs(void)
 {
   int regno = 0;
-  int64_t regval = 0;
   String resp;
   String param;
   String value;
@@ -335,7 +333,7 @@ void setCwIdent(void)
 
 void setjtMode(void)
 {
-  String jtModes[] = {"0 = None" , "1 = JT4G" , "2 = JT65B" , "3 = JT65C", "$$$"};
+  String jtModes[] = {"0 = None" , "1 = JT4G" , "2 = Q65-30B" , "$$$"};
   String jtModesReduced[] = {"0 = None" , "1 = JT4G" , "$$$"};
   char resp;
   char maxresp;
@@ -348,9 +346,9 @@ void setjtMode(void)
   else
     {
       showMenu(jtModes);
-      maxresp = '3';
+      maxresp = '2';
     }
-  resp = getSelection("Select JT Mode --->");
+  resp = getSelection("Select Digi Mode --->");
   if((resp >='0') && (resp <= maxresp))
     {
       chanData[channel].jtMode =  resp - '0';
@@ -367,14 +365,36 @@ void setjtMode(void)
       chanData[channel].jtTone1 = inputNumber() ;
       chanData[channel].jtTone1 = chanData[channel].jtTone1 / 1000000.0;      //convert to MHz
       char temp[14]; 
-      Serial.print("Enter JT Message (Max 13 characters) --->");
-      jts = inputString(true) + "             ";                 //make sure there are at least 13 chars available
-      jts.toCharArray(temp,14);                                  //copy the chars to a temporary char array (include trailing zero terminator)
-      for(int c = 0;c<13;c++)                                    //now copy the  13 chars excluding the trailing zero
+      if(chanData[channel].jtMode == 1 )
       {
-        chanData[channel].jtid[c] = temp[c];
-      }     
-
+       Serial.print("Enter JT4G Message (Max 13 characters) --->");
+       jts = inputString(true) + "             ";                 //make sure there are at least 13 chars available
+       jts.toCharArray(temp,14);                                  //copy the chars to a temporary char array (include trailing zero terminator)
+       for(int c = 0;c<13;c++)                                    //now copy the  13 chars excluding the trailing zero
+       {
+         chanData[channel].jtid[c] = temp[c];
+       }
+      }
+      else
+      {       
+        Serial.print("Enter Q65 Callsign  (Max 6 characters) --->");
+        jts = inputString(true) + "      ";                 //make sure there are at least 6 chars available
+        jts.toCharArray(temp,7);                                  //copy the chars to a temporary char array (include trailing zero terminator)    
+       for(int c = 0;c<6;c++)                                    //now copy the 6 chars excluding the trailing zero
+        {
+          chanData[channel].jtid[c] = temp[c];
+        }
+        chanData[channel].jtid[6] = ' ';                    //space seperator
+        Serial.print("Enter Q65 Locator Square  (4 characters) --->");
+        jts = inputString(true) + "    ";                 //make sure there are at least 4 chars available
+        jts.toCharArray(temp,5);                                  //copy the chars to a temporary char array (include trailing zero terminator)    
+       for(int c = 0;c<4;c++)                                    //now copy the 4 chars excluding the trailing zero
+        {
+          chanData[channel].jtid[7+c] = temp[c];
+        }
+        chanData[channel].jtid[11] = 0;                    //Zero Terminator
+      }
+      
       double worsterr = jtInit();
 
       if((worsterr * 1000000.0)> 0.009)
@@ -462,7 +482,7 @@ void mainMenu(void)
 {
   char resp;
   double temp;
-  String menuList[] = {"T = Select Chip Type" , "O = Set Reference Oscillator Frequency" , "N = Set Channel Number" ,"     ", "D = Set Default Register Values for chip"  , "P = Enter PFD Frequency" ,"M = Set External Multiplier", "F = Enter Output Frequency" , "C = Calculate and display frequency from current settings" , "V = View / Enter Variables for Registers", "R = View / Enter Registers Directly in Hex" , "I = Configure CW Ident" ,"J = Configure JT Mode" , "K = Configure External Key", "G = View GPS NMEA data", "S = Save to EEPROM" , "X = Exit Menu" , "$$$"};
+  String menuList[] = {"T = Select Chip Type" , "O = Set Reference Oscillator Frequency" , "N = Set Channel Number" ,"     ", "D = Set Default Register Values for chip"  , "P = Enter PFD Frequency" ,"M = Set External Multiplier", "F = Enter Output Frequency" , "C = Calculate and display frequency from current settings" , "V = View / Enter Variables for Registers", "R = View / Enter Registers Directly in Hex" , "I = Configure CW Ident" ,"J = Configure Digi Mode" , "K = Configure External Key", "G = View GPS NMEA data", "S = Save to EEPROM" , "X = Exit Menu" , "$$$"};
   String chipList[] = {"1 = MAX2870" , "2 = ADF4351" , "3 = LMX2595" , "$$$"};
 
    Serial.println("");
@@ -737,7 +757,7 @@ bool paramUint(String param , String name, unsigned int* var , String value , ui
         {
           if(value.length() >0)
           {
-            if((value.toInt() >= min) && (value.toInt() <= max))
+            if(((uint32_t)value.toInt() >= min) && ((uint32_t)value.toInt() <= max))
             {
               *var = value.toInt();
             }

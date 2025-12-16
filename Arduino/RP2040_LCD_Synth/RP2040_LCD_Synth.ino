@@ -4,9 +4,9 @@
 
 #define LCDVERSION
 
-#define VERSION 1.07
+#define VERSION 1.08
 
-#define EEPROMVER 0x51
+#define EEPROMVER 0x52
 
 #define NUMBEROFCHANNELS 10
 
@@ -46,6 +46,7 @@ char cwid[32] = " ";                    // up to 30 CWID characters
 uint8_t jtMode = 0;                     //JT mode
 char jtid[13] = " ";                    //JT Message
 float jtTone1 = 0;                      //JT Tone 1 Offset from Nominal Frequency (Mhz)
+uint8_t jtInterval = 60;
 uint8_t extMult = 1;                    //Multiplcation factor for external frequency multiplier. (used to calculate the correct FSK Shifts.)
 };
 
@@ -78,12 +79,12 @@ void saveSettings(void);
 #include <JTEncode.h>
 
 
-#define JT65B_TONE_SPACING       5.4         // 2 * 2.69 Hz
-#define JT65C_TONE_SPACING       10.8        // 4 * 2.69 Hz
-#define JT4G_TONE_SPACING        315         // 72 * 4.37 Hz
-#define JT65_DELAY               372         // Delay in ms for JT65
-#define JT4_DELAY                229         // Delay value for JT4
 
+#define JT4G_TONE_SPACING        315         // 72 * 4.37 Hz
+#define JT4_DELAY                229         // Delay value for JT4
+#define Q65_30B_TONE_SPACING        6.6666       // 6.6666 Hz for Mode B
+#define Q65_30B_DELAY               300         // Delay in ms for Q65 30
+#define Q65_30B_SYMBOL_COUNT     85          //85 symbols
 
 uint8_t jtBuffer[256];
 uint8_t jtSymbolCount;
@@ -105,8 +106,7 @@ bool cwidActive = false;                //flag to start sending CW ID
 int nextcwidTime = 60;                   //trigger time for next CWID
 
 bool jtActive = false;                  //flag to start Jt Sending
-int  jtTime = 1;                       //trigger time for next JT sequence
-
+int  nextjtTime = 1;                       //trigger time for next JT sequence
 bool lastKeyState = 1;                 //external key state last pass 1 = key up 0 = key down
 
 #define GPSTXPin 0                      //Serial data to GPS module 
@@ -288,9 +288,10 @@ void loop()
         nextcwidTime = (seconds + chanData[channel].cwidInterval) % 120;            //schedule the next CW ID
        }
 
-     if((chanData[channel].jtMode != 0) && (seconds == jtTime))
+     if((chanData[channel].jtMode != 0) && (seconds == nextjtTime))
        {
         jtActive = true;                                        //start the JT Sequence
+        nextjtTime = (seconds + chanData[channel].jtInterval) % 120;            //schedule the next CW ID
        }
 
     if(chanData[channel].fskMode & CWIDBIT)
