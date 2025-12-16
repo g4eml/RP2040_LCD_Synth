@@ -120,13 +120,6 @@
 #define JTM2_W 20
 #define JTM2_H 20
 
-//JTmode 3
-#define JTM3_LX 350
-#define JTM3_LY 230
-#define JTM3_X 410
-#define JTM3_Y 220
-#define JTM3_W 20
-#define JTM3_H 20
 
 //JTT1
 #define JTT1_LX 10
@@ -179,20 +172,18 @@ void configScreenUpdate(void)
   drawNumBox(CWSH_X, CWSH_Y, CWSH_W, CWSH_H, (chanData[channel].cwidShift * 1000000.0), 0, false);
   drawLabel(CWEN_LX, CWEN_LY, "CWID On", TFT_BLUE,0);
   drawOnOff(CWEN_X, CWEN_Y, CWEN_W, CWEN_H, chanData[channel].fskMode & CWIDBIT);
-  drawLabel(JTID_LX, JTID_LY, "JT Ident", TFT_BLUE,0);
+  drawLabel(JTID_LX, JTID_LY, "Digi Ident", TFT_BLUE,0);
   drawTextBox(JTID_X, JTID_Y, JTID_W, JTID_H, chanData[channel].jtid,false,0);
-  drawLabel(JTT1_LX, JTT1_LY, "JT Tone 1 Offset (Hz)", TFT_BLUE,0);
+  drawLabel(JTT1_LX, JTT1_LY, "Digi Tone 1 Offset (Hz)", TFT_BLUE,0);
   drawNumBox(JTT1_X, JTT1_Y, JTT1_W, JTT1_H, (chanData[channel].jtTone1 * 1000000.0) , 0, false);
-  drawLabel(JTM0_LX, JTM0_LY, "JT Mode Off", TFT_BLUE,0);
+  drawLabel(JTM0_LX, JTM0_LY, "Digi Mode Off", TFT_BLUE,0);
   drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
   drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
   drawOnOff(JTM1_X, JTM1_Y, JTM1_W, JTM1_H, chanData[channel].jtMode == 1);
   if(chip == 3)
     {
-    drawLabel(JTM2_LX, JTM2_LY, "JT65B", TFT_BLUE,0);
+    drawLabel(JTM2_LX, JTM2_LY, "Q65-30B", TFT_BLUE,0);
     drawOnOff(JTM2_X, JTM2_Y, JTM2_W, JTM2_H, chanData[channel].jtMode == 2);
-    drawLabel(JTM3_LX, JTM3_LY, "JT65C", TFT_BLUE,0);
-    drawOnOff(JTM3_X, JTM3_Y, JTM3_W, JTM3_H, chanData[channel].jtMode == 3);
     }
   drawTextBox(EXIT_X, EXIT_Y, EXIT_W, EXIT_H, "Exit" , true, 0);
 }
@@ -345,10 +336,29 @@ void doConfigScreen(void)
 
       if (touchZone(JTID_X, JTID_Y, JTID_W, JTID_H)) 
       {
-      getText("Enter JT ID", &chanData[channel].jtid[0], 13);
-      jtInit();
-      configScreenUpdate();
-      saveRequired = true;
+        if(chanData[channel].jtMode == 1)
+        {
+          getText("Enter JT4G ID", &chanData[channel].jtid[0], 13);
+          jtInit();
+        }
+        else
+        {
+          for(int i =0;i<13;i++)
+           {
+            chanData[channel].jtid[i]=0; 
+           }
+          getText("Enter Q65 Callsign (Max 6 Chars)", &chanData[channel].jtid[0], 6);
+          for(int i =0;i<13;i++)
+           {
+            if(chanData[channel].jtid[i] == 0) chanData[channel].jtid[i]=' '; 
+           }
+          getText("Enter Q65 Locator (4 Chars)", &chanData[channel].jtid[7], 4);
+          chanData[channel].jtid[11] = 0;
+          jtInit();
+        }
+
+        configScreenUpdate();
+        saveRequired = true;
       }
 
       if (touchZone(JTM0_X, JTM0_Y, JTM0_W, JTM0_H)) 
@@ -378,15 +388,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if ((chip == 3) && (touchZone(JTM3_X, JTM3_Y, JTM3_W, JTM3_H))) 
-      {
-      chanData[channel].jtMode = 3;
-      seconds = -1;                       //reset the timing after using the menu.
-      milliseconds = 0;
-      jtInit();
-      configScreenUpdate();
-      saveRequired = true;
-      }
+      
 
       if (touchZone(EXIT_X, EXIT_Y, EXIT_W, EXIT_H)) 
       {
