@@ -24,28 +24,62 @@ double jtInit(void)
       jtSymbolCount = JT4_SYMBOL_COUNT;
       nextjtTime = 1;                           //JT message every even minute
       chanData[channel].cwidInterval = 120;            //override CW interval when Jt mode is active
-      chanData[channel].jtInterval = 120;            //digi mode every 2 minute
+      chanData[channel].jtInterval = 120;            //digi mode every 2 minute 
       nextcwidTime = 60;                    //CW ID every Odd minute
       break;
 
-      case 2:
+      case 2 ... 4: //Q65-15
       Q65Encode(chanData[channel].jtid , jtBuffer);
-      jtToneDelay = Q65_30B_DELAY;
+      jtToneDelay = Q65_DELAY;
       jtNumberOfTones = 65;
-      jtToneSpacing = Q65_30B_TONE_SPACING;
-      jtSymbolCount = Q65_30B_SYMBOL_COUNT;
+      jtToneSpacing = Q65_TONE_SPACING *2;
+
+      if(chanData[channel].jtMode == 3)
+       {
+        jtToneSpacing = Q65_TONE_SPACING *4;
+       }
+      if(chanData[channel].jtMode == 4)
+       {
+        jtToneSpacing = Q65_TONE_SPACING *8;
+       }
+
+      jtSymbolCount = Q65_SYMBOL_COUNT;
       nextjtTime = 1;                           //Digi message every minute
       chanData[channel].cwidInterval = 60;            //override CW interval when Digi mode is active
-      chanData[channel].jtInterval = 60;            //digi mode every minute  
-      nextcwidTime = 30;                    //CW ID at 30 seconds
+      chanData[channel].jtInterval = 60;            //digi mode every 60 secs  
+      nextcwidTime = 30;                        //CW ID at 30 seconds
+      break;
 
-      break;    
+      case 5 ... 8: //Q65-30
+      Q65Encode(chanData[channel].jtid , jtBuffer);
+      jtToneDelay = Q65_DELAY *2;
+      jtNumberOfTones = 65;
+      jtToneSpacing = Q65_TONE_SPACING;
 
+      if(chanData[channel].jtMode == 6)
+       {
+        jtToneSpacing = Q65_TONE_SPACING *2;
+       }
+      if(chanData[channel].jtMode == 7)
+       {
+        jtToneSpacing = Q65_TONE_SPACING *4;
+       }
+      if(chanData[channel].jtMode == 8)
+       {
+        jtToneSpacing = Q65_TONE_SPACING *8;
+       }
 
+      jtSymbolCount = Q65_SYMBOL_COUNT;
+      nextjtTime = 1;                           //Digi message every minute
+      chanData[channel].cwidInterval = 60;            //override CW interval when Digi mode is active
+      chanData[channel].jtInterval = 60;            //digi mode every 60 secs  
+      nextcwidTime = 30;                        //CW ID at 30 seconds
+      break;
+ 
     }
 
      chipSetFrequency(nominal);
-     chipSaveJt(0);           //save the nominal carrier frequency to JT Index 0
+     chipSaveJt(0);                           //save the nominal carrier frequency to JT Index 0
   for(int i = 0;i < jtNumberOfTones;i++)
    {
     nomf = nominal + (chanData[channel].jtTone1 / (double) chanData[channel].extMult) + i * ((jtToneSpacing/1000000.0) / (double) chanData[channel].extMult);
@@ -78,7 +112,7 @@ void jtTick(void)
           {
             jtActive = false;
             jtPointer =  0;
-            chipJtShift(0);               //reset to nominal carrier frequency
+            chipJtShift(0);                                 //Reset to nominal carrier frequency
           }
         else
         {

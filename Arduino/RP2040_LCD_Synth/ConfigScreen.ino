@@ -1,7 +1,7 @@
 //ADF4351
-#define ADF_LX 130
+#define ADF_LX 125
 #define ADF_LY 15
-#define ADF_X 210
+#define ADF_X 205
 #define ADF_Y 5
 #define ADF_W 20
 #define ADF_H 20
@@ -15,13 +15,20 @@
 #define MAX_H 20
 
 //LMX2595
-#define LMX_LX 250
+#define LMX_LX 245
 #define LMX_LY 15
-#define LMX_X 330
+#define LMX_X 325
 #define LMX_Y 5
 #define LMX_W 20
 #define LMX_H 20
 
+//ADF5355
+#define AD5_LX 365
+#define AD5_LY 15
+#define AD5_X 445
+#define AD5_Y 5
+#define AD5_W 20
+#define AD5_H 20
 
 //Reference Frequency
 #define REF_LX 10
@@ -99,26 +106,34 @@
 //JTmode 0
 #define JTM0_LX 10
 #define JTM0_LY 230
-#define JTM0_X 120
+#define JTM0_X 125
 #define JTM0_Y 220
 #define JTM0_W 20
 #define JTM0_H 20
 
-//JTmode 1
-#define JTM1_LX 160
+//JTmode JT4
+#define JTM1_LX 155
 #define JTM1_LY 230
-#define JTM1_X 215
+#define JTM1_X 205
 #define JTM1_Y 220
 #define JTM1_W 20
 #define JTM1_H 20
 
-//JTmode 2
-#define JTM2_LX 250
+//JTmode Q65
+#define JTM2_LX 235
 #define JTM2_LY 230
-#define JTM2_X 310
+#define JTM2_X 272
 #define JTM2_Y 220
 #define JTM2_W 20
 #define JTM2_H 20
+
+//Q65 Submode
+#define Q65M_LX 300
+#define Q65M_LY 230
+#define Q65M_X 390
+#define Q65M_Y 220
+#define Q65M_W 50
+#define Q65M_H 20
 
 
 //JTT1
@@ -147,6 +162,7 @@
 
 void configScreenUpdate(void) 
 {
+  char Q65MODE[7][4]={"15A","15B","15C","30A","30B","30C","30D"};
   tft.fillScreen(TFT_CYAN);
   drawLabel(MAX_LX, MAX_LY, "MAX2870", TFT_BLUE,0);
   drawOnOff(MAX_X, MAX_Y, ADF_W, ADF_H, chip == 1);
@@ -154,6 +170,8 @@ void configScreenUpdate(void)
   drawOnOff(ADF_X, ADF_Y, MAX_W, MAX_H, chip == 2);
   drawLabel(LMX_LX, LMX_LY, "LMX2595", TFT_BLUE,0);
   drawOnOff(LMX_X, LMX_Y, LMX_W, LMX_H, chip == 3);
+  drawLabel(AD5_LX, AD5_LY, "ADF5355", TFT_BLUE,0);
+  drawOnOff(AD5_X, AD5_Y, AD5_W, AD5_H, chip == 4);
   drawLabel(REF_LX, REF_LY, "Reference Oscillator", TFT_BLUE,0);
   drawNumBox(REF_X, REF_Y, REF_W, REF_H, refOsc, 6, false);
   drawLabel(PFD_LX, PFD_LY, "PFD", TFT_BLUE,0);
@@ -180,10 +198,16 @@ void configScreenUpdate(void)
   drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
   drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
   drawOnOff(JTM1_X, JTM1_Y, JTM1_W, JTM1_H, chanData[channel].jtMode == 1);
-  if(chip == 3)
+  if(chip >= 3)
     {
-    drawLabel(JTM2_LX, JTM2_LY, "Q65-30B", TFT_BLUE,0);
-    drawOnOff(JTM2_X, JTM2_Y, JTM2_W, JTM2_H, chanData[channel].jtMode == 2);
+    drawLabel(JTM2_LX, JTM2_LY, "Q65", TFT_BLUE,0);
+    drawOnOff(JTM2_X, JTM2_Y, JTM2_W, JTM2_H, chanData[channel].jtMode >= 2);
+    if(chanData[channel].jtMode >1)
+    {
+      drawLabel(Q65M_LX, Q65M_LY, "SubMode", TFT_BLUE,0);
+      drawTextBox(Q65M_X, Q65M_Y, Q65M_W, Q65M_H, Q65MODE[chanData[channel].jtMode - 2],false,0);
+    }
+
     }
   drawTextBox(EXIT_X, EXIT_Y, EXIT_W, EXIT_H, "Exit" , true, 0);
 }
@@ -223,6 +247,16 @@ void doConfigScreen(void)
       if(touchZone(LMX_X, LMX_Y, LMX_W, LMX_H))
       {
         chip = 3;
+        changeChip();
+        chipEncodeRegs();
+        chipUpdate();
+        configScreenUpdate();
+        saveRequired = true;
+      }
+
+      if(touchZone(AD5_X, AD5_Y, AD5_W, AD5_H))
+      {
+        chip = 4;
         changeChip();
         chipEncodeRegs();
         chipUpdate();
@@ -333,6 +367,54 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
+      if (touchZone(Q65M_X, Q65M_Y, Q65M_W, Q65M_H)) 
+      {
+        char temp[4];
+        bool done = false;
+        while(!done)
+        {
+          getText("Enter Q65 Submode (15A-C 30A-D)", temp, 3);
+          if(strcmp(temp,"15A")==0)
+          {      
+          chanData[channel].jtMode = 2;
+          done = true;
+          }
+          if(strcmp(temp,"15B")==0)
+          {      
+          chanData[channel].jtMode = 3;
+          done = true;
+          }
+          if(strcmp(temp,"15C")==0)
+          {      
+          chanData[channel].jtMode = 4;
+          done = true;
+          }
+          if(strcmp(temp,"30A")==0)
+          {      
+          chanData[channel].jtMode = 5;
+          done = true;
+          }
+          if(strcmp(temp,"30B")==0)
+          {      
+          chanData[channel].jtMode = 6;
+          done = true;
+          }
+          if(strcmp(temp,"30C")==0)
+          {      
+          chanData[channel].jtMode = 7;
+          done = true;
+          }
+          if(strcmp(temp,"30D")==0)
+          {      
+          chanData[channel].jtMode = 8;
+          done = true;
+          }
+        }
+
+        configScreenUpdate();
+        saveRequired = true;
+      }
+
 
       if (touchZone(JTID_X, JTID_Y, JTID_W, JTID_H)) 
       {
@@ -378,7 +460,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if ((chip == 3) && (touchZone(JTM2_X, JTM2_Y, JTM2_W, JTM2_H))) 
+      if ((chip >= 3) && (touchZone(JTM2_X, JTM2_Y, JTM2_W, JTM2_H))) 
       {
       chanData[channel].jtMode = 2;
       seconds = -1;                       //reset the timing after using the menu.
