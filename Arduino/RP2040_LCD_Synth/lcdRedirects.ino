@@ -20,6 +20,11 @@
             if(p>63) p=63;
             LMX2595_OUTA_PWR = p;
           break;
+
+          case ADF5355:
+            if(p>3) p=3;
+            ADF5355_RFPWR = p;
+          break;
         }
     chipEncodeRegs();
     chipUpdate();
@@ -42,6 +47,11 @@
             digitalWrite(LMX2595CEPin,o);
             LMX2595_OUTA_PD = !o;
           break;
+          
+          case ADF5355:
+            ADF5355_RFAEN = o;
+            ADF5355_RFBDIS = !o;
+          break;
         }
      chipEncodeRegs();
      chipUpdate();   
@@ -63,6 +73,10 @@
           case LMX2595:
             return LMX2595_OUTA_PWR;
           break;
+
+          case ADF5355:
+            return ADF5355_RFPWR;
+          break;
         }
     return 0;
   }
@@ -82,6 +96,10 @@
 
           case LMX2595:
           return !LMX2595_OUTA_PD;
+          break;
+
+          case ADF5355:
+            return ADF5355_RFAEN;
           break;
         }
      return 0;

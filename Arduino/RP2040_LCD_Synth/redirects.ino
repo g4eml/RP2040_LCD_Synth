@@ -15,6 +15,10 @@ void chipUpdate(void)
     case LMX2595:
     LMX2595Update();
     break;
+
+    case ADF5355:
+    ADF5355Update();
+    break;
   }
 }
 
@@ -32,6 +36,10 @@ void chipSetParameters(void)
 
     case LMX2595:
     LMX2595SetParameters();
+    break;
+
+    case ADF5355:
+    ADF5355SetParameters();
     break;
   }
 }
@@ -51,6 +59,10 @@ void chipInit(void)
     case LMX2595:
     LMX2595Init();
     break;
+
+    case ADF5355:
+    ADF5355Init();
+    break;
   }
 }
 
@@ -68,6 +80,10 @@ void chipSetFrequency(double f)
 
     case LMX2595:
     LMX2595SetFrequency(f);
+    break;
+
+    case ADF5355:
+    ADF5355SetFrequency(f);
     break;
   }
 }
@@ -88,6 +104,10 @@ double chipGetFrequency(void)
     case LMX2595:
     freq = LMX2595GetFrequency();
     break;
+
+    case ADF5355:
+    freq = ADF5355GetFrequency();
+    break;  
   }
 
   return freq;
@@ -108,6 +128,10 @@ void chipCalcFreq(void)
           case LMX2595:
           LMX2595CalcFreq();
           break;
+
+          case ADF5355:
+          ADF5355CalcFreq();
+          break;
         }
 }
   void chipDecodeRegs(void)
@@ -124,6 +148,10 @@ void chipCalcFreq(void)
 
           case LMX2595:
           LMX2595DecodeRegs();
+          break;
+
+          case ADF5355:
+          ADF5355DecodeRegs();
           break;
         }
   }
@@ -143,6 +171,10 @@ void chipCalcFreq(void)
           case LMX2595:
           LMX2595EncodeRegs();
           break;
+
+          case ADF5355:
+          ADF5355EncodeRegs();
+          break;
         }
   }
 
@@ -161,6 +193,10 @@ void chipCalcFreq(void)
           case LMX2595:
           LMX2595SetDefault();
           break;
+
+          case ADF5355:
+          ADF5355SetDefault();
+          break; 
         }
   }
 
@@ -180,6 +216,10 @@ void chipCalcFreq(void)
           case LMX2595:
           LMX2595FskKey(key);
           break;
+
+          case ADF5355:
+          ADF5355FskKey(key);
+          break;  
         }
   }
 
@@ -199,6 +239,10 @@ void chipCalcFreq(void)
           case LMX2595:
           LMX2595ExtKey(key);
           break;
+
+          case ADF5355:
+          ADF5355ExtKey(key);
+          break;
         }
   }
 
@@ -217,6 +261,10 @@ void chipCalcFreq(void)
 
           case LMX2595:
           LMX2595jtShift(val);
+          break;
+
+          case ADF5355:
+          ADF5355jtShift(val);
           break;
         }
   }
@@ -238,6 +286,10 @@ void chipCalcFreq(void)
           case LMX2595:
           LMX2595SaveFskShift();
           break;
+
+          case ADF5355:
+          ADF5355SaveFskShift();
+          break;
         }
   }
 
@@ -256,6 +308,10 @@ void chipCalcFreq(void)
 
           case LMX2595:
           LMX2595SaveKeyShift();
+          break;
+
+          case ADF5355:
+          ADF5355SaveKeyShift();
           break;
         }
   }
@@ -277,6 +333,10 @@ void chipCalcFreq(void)
           case LMX2595:
           LMX2595SaveJt(index);
           break;
+
+          case ADF5355:
+          ADF5355SaveJt(index);
+          break;
         }
   }
 
@@ -296,6 +356,10 @@ void chipCalcFreq(void)
 
           case LMX2595:
           pfd = LMX2595GetPfd();
+          break;
+
+          case ADF5355:
+          pfd = ADF5355GetPfd();
           break;
         }
 
@@ -317,6 +381,10 @@ void chipCalcFreq(void)
 
           case LMX2595:
           rpfd = LMX2595CalcPFD(pfd);
+          break;
+
+          case ADF5355:
+          rpfd = ADF5355CalcPFD(pfd);
           break;
         }
 
