@@ -3,7 +3,7 @@
 ## Description
 
 This Project is a development of the RP2040_Synth project with the addition of a Touch screen LCD display module, refered to here as the HMI Module (Human Machine Interface). This is intended to be used as a piece of test equipment. 
-Currently supports 3 different type of synthesiser chip, the ADF4351, the Max2870 and the LMX2595.
+Currently supports 4 different type of synthesiser chip, the ADF4351, the Max2870, the LMX2595 and the ADF5355.
 
 ## Features
 
@@ -17,7 +17,7 @@ Settings are saved to EEPROM for automatic load on power on.
 
 Support for FSK CW Identification for beacon use.
 
-Supports data modes for Beacon Identification.  JT4G is available on all chip types. Q65-30B is only available on the LMX2595.
+Supports data modes for Beacon Identification.  JT4G is available on all chip types. Q65 is only available on the LMX2595 and ADF5355.
 
 Note:- Whilst JT4G mode is available on all chips there may be some limitations. The ADF4351 and MAX2870 chips have a limited frequency resolution and may not be able to accurately set the required tone frequencies especially when an external multiplication chain is used.
 
@@ -157,16 +157,16 @@ The HMI module does not have a connector for the USB 5V supply. You may need to 
 
 The generic wiring instructions are as follows:-
 
-| HMI Module | ADF4351 | MAX2870 | LMX2595 |
-| :---:  |  :---:  |  :---:  |   :---: |
-|5V      |   N/C   |   N/C   |    5V   |
-|3V3     |   3V3   |   3V3   |   N/C   |
-|GND     |   GND   |   GND   |   GND   |
-|GPO3    |   CE    |   CE    |   CE    |
-|GPO4    |   MUX   |   MUX   |  MUXout |
-|GPO5    |   LE    |   LE    |   CSB   |
-|GPO6    |   CLK   |   CLK   |   SCK   |
-|GPO7    |   DAT   |   DATA  |   SDI   |
+| HMI Module | ADF4351 | MAX2870 | LMX2595 | ADF5355 |
+| :---:  |  :---:  |  :---:  |   :---: |  :---:  |
+|5V      |   N/C   |   N/C   |    5V   |   5V   |
+|3V3     |   3V3   |   3V3   |   N/C   |  N/C   |
+|GND     |   GND   |   GND   |   GND   |  GND   |
+|GPO3    |   CE    |   CE    |   CE    |   CE   |
+|GPO4    |   MUX   |   MUX   |  MUXout |  MUX   |
+|GPO5    |   LE    |   LE    |   CSB   |  LE    |
+|GPO6    |   CLK   |   CLK   |   SCK   |  CLK  |
+|GPO7    |   DAT   |   DATA  |   SDI   |  DAT  |
 
 The firmware also supports the optional connection of a GPS module. This is used to accurately set the time, which is needed for the data modes. It is not needed for Local Oscillator or a CW only beacon. Any GPS module with a 3V3 output can be used. It needs to output NMEA data at 9600 Baud. One of the low cost NEO6M modules was used for development. 
 
@@ -194,7 +194,7 @@ An external Morse Key can be connected between GP27 and Ground. This can be conf
 
 On first use the screen will show the Touch calibration screen. Follow the instructions and touch each of the four corners of the screen. 
 
-By default on power up the firmware will immediately send the EEPROM saved register values to the sunthesiser chip.  If the CW ident feature is enabled the ident will begin. If the JT mode is enabled the JT sequence will begin. Note that this will initially not be correctly timed. Once the GPS aquires its satellites the timing will synchronise. 
+By default on power up the firmware will immediately send the EEPROM saved register values to the sunthesiser chip.  If the CW ident feature is enabled the ident will begin. If the Data mode is enabled the Data sequence will begin. Note that this will initially not be correctly timed. Once the GPS aquires its satellites the timing will synchronise. 
 
 ## Main Screen
 
@@ -264,5 +264,6 @@ S = Save Registers to EEPROM. Saves the current Synthesiser settings to EEPROM. 
 X = Exit Menu. Exits from the menu, re-initialises the Synthesiser and starts the CW Ident. 
 
 ## 
+
 
 
