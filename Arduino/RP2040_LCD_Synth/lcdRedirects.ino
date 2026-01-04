@@ -104,3 +104,28 @@
         }
      return 0;
   }
+
+      bool chipLocked(void)
+  {
+
+      switch(chip)
+        {
+          case MAX2870:
+          return digitalRead(MAX2870MUXPin);
+          break;
+
+          case ADF4351:
+          return digitalRead(ADF4351MUXPin);
+          break;
+
+          case LMX2595:
+          return digitalRead(LMX2595MUXPin);
+          break;
+
+          case ADF5355:
+          return digitalRead(ADF5355MUXPin);
+          break;
+        }
+     return 0;
+  }
+

@@ -110,6 +110,9 @@ bool jtActive = false;                  //flag to start Jt Sending
 int  nextjtTime = 1;                       //trigger time for next JT sequence
 bool lastKeyState = 1;                 //external key state last pass 1 = key up 0 = key down
 
+uint8_t lockCount=0;
+bool lockState =1;
+
 #define GPSTXPin 0                      //Serial data to GPS module 
 #define GPSRXPin 1                      //SeriaL data from GPS module
 
@@ -360,6 +363,35 @@ void loop()
        homeScreenUpdate();
       }
     }   
+
+   if(chipLocked())
+    {
+      if(lockCount <255)
+       {
+        lockCount++;
+       }
+    }
+    else
+    {
+     if(lockCount > 0)
+       {
+        lockCount--;
+       }
+    }
+
+   if((lockCount < 128) && (lockState == 1))
+    {
+      showUnlocked();
+      lockState = 0;
+    }
+
+   if((lockCount > 128) && (lockState == 0))
+    {
+      showLocked();
+      lockState = 1;
+    } 
+
+
 #endif
 
 

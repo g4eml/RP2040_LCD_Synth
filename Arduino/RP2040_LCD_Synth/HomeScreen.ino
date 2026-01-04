@@ -69,6 +69,12 @@
 
 #define BATCAL 588.0
 
+//Unlocked Display
+#define LOCK_X 250
+#define LOCK_Y 160
+#define LOCK_W 200
+#define LOCK_H 50
+
 float getVolts(void)
 {
   uint16_t vbat = 0;
@@ -89,6 +95,22 @@ void displayVolts(void)
   drawLabel(VOLT_X, VOLT_Y, vstr, TFT_BLUE,0);
 
 }
+
+void showLocked(void)
+{
+  char vstr[24];
+  tft.fillRect(LOCK_X, LOCK_Y-20, LOCK_W, LOCK_H, TFT_CYAN);
+}
+
+void showUnlocked(void)
+{
+  char vstr[24];
+  tft.fillRect(LOCK_X, LOCK_Y-10, LOCK_W, LOCK_H, TFT_CYAN);
+  drawLabel(LOCK_X, LOCK_Y, "Unlocked", TFT_RED,1);
+}
+
+
+
  void homeScreenUpdate(void)
  {
   tft.fillScreen(TFT_CYAN);
