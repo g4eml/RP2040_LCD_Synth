@@ -1,0 +1,13 @@
+"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
+1;"A1";"RaspberryPi_Pico_Common_THT";1;"RaspberryPi_Pico";;;
+2;"C3";"C_0805_2012Metric_Pad1.18x1.45mm_HandSolder";1;"100nF";;;
+3;"C4, C5";"C_0805_2012Metric_Pad1.18x1.45mm_HandSolder";2;"22uF";;;
+4;"D1";"D_SOD-123F";1;"D_Schottky";;;
+5;"D2";"LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder";1;"LED";;;
+6;"J1";"PinSocket_1x14_P2.54mm_Vertical";1;"Conn_01x14_Socket";;;
+7;"J2";"PinSocket_1x04_P2.54mm_Vertical";1;"Conn_01x04_Socket";;;
+8;"J3";"PinSocket_1x20_P2.54mm_Vertical";1;"Conn_01x18_Socket";;;
+9;"J4, J5";"JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical";2;"Conn_01x02_Pin";;;
+10;"R4";"C_0805_2012Metric_Pad1.18x1.45mm_HandSolder";1;"2K";;;
+11;"R5";"C_0805_2012Metric_Pad1.18x1.45mm_HandSolder";1;"4K7";;;
+12;"U1";"TSOT-23-5";1;"LTC4054ES5-4.2";;;
