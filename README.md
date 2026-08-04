@@ -44,8 +44,11 @@ Note:- similar HMI Panels are available using the ESP32 processor chip. Make sur
 
 ## Alternative Display
 
-The correct module now appears to be difficult to obtain. A new interface board has been designed to allow a Raspberry Pi Pico to be fitted to a more easily available 3.5" TFT touch panel.
+The correct module now appears to be difficult to obtain. A new interface board has been designed to allow a Raspberry Pi Pico to be fitted to a more easily available 3.5" TFT touch panel. Full Details can be found in the PCB folder. 
 
+<img width="370" height="333" alt="Display" src="https://github.com/user-attachments/assets/4f37627a-243e-4a2b-a830-20b6c3722300" />
+
+<img width="1724" height="930" alt="Pico_Display_Image" src="https://github.com/user-attachments/assets/ccbad2ab-ae08-4e6a-879c-27b991874a14" />
 
 The LCD screen, controller chip and Touch Screen controller appear to be exactly the same as the original module.
  
