@@ -67,7 +67,7 @@
 #define VOLT_W 100
 #define VOLT_H 30
 
-#define BATCAL 588.0
+#define BATCAL 492.0
 
 float getVolts(void)
 {
