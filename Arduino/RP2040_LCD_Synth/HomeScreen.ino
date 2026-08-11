@@ -67,7 +67,7 @@
 #define VOLT_W 100
 #define VOLT_H 30
 
-#define BATCAL 588.0
+#define BATCAL 492.0
 
 float getVolts(void)
 {
@@ -141,7 +141,7 @@ void displayVolts(void)
  bool homeScreenTouched(void)
  {
   uint16_t raw = tft.getTouchRawZ();
-  if(raw > 1000)
+  if(raw > 300)
   {
     bool pressed =tft.getTouch(&t_x, &t_y);
     return pressed;

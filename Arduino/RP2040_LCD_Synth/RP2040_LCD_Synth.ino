@@ -4,7 +4,7 @@
 
 #define LCDVERSION
 
-#define VERSION 1.09
+#define VERSION 1.11
 
 #define EEPROMVER 0x52
 
