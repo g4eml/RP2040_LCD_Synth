@@ -141,7 +141,7 @@ void displayVolts(void)
  bool homeScreenTouched(void)
  {
   uint16_t raw = tft.getTouchRawZ();
-  if(raw > 1000)
+  if(raw > 300)
   {
     bool pressed =tft.getTouch(&t_x, &t_y);
     return pressed;
