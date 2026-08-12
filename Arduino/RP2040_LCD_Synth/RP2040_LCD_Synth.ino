@@ -4,9 +4,9 @@
 
 #define LCDVERSION
 
-#define VERSION 1.11
+#define VERSION 1.12
 
-#define EEPROMVER 0x52
+#define EEPROMVER 0x53
 
 #define NUMBEROFCHANNELS 10
 
@@ -16,7 +16,6 @@ enum chip { NONE, MAX2870 , ADF4351 , LMX2595, ADF5355 };
 String chipName[] = {"None","MAX2870", "ADF4351" , "LMX2595" , "ADF5355"};
 
 bool saveRequired = false;
-bool batPresent = false;
 
 //These values are saved to the eeprom for recall on statup. 
 //these values alpply to all channels
@@ -24,6 +23,7 @@ bool batPresent = false;
 uint8_t chip = MAX2870;                 //index to the current chip type (applies to all channels)
 uint8_t selChan = 0;                    //FF if channel is externally selected by switches. Channel number to force one channel. 
 double refOsc = 100.000 ;               //reference oscillator frequency in MHz (applies to all channels)
+uint16_t batcal = 492;                  //battery calibration value
 
 //Bit definitions for fskMode flags
 
@@ -159,7 +159,6 @@ void setup()
 {
   Serial.begin();                       //USB serial port
   analogReadResolution(12);
-  if(getVolts() > 4.15) batPresent = false; else batPresent = true;
   Serial1.setRX(GPSRXPin);              //Configure the GPIO pins for the GPS module
   Serial1.setTX(GPSTXPin);
 
@@ -178,8 +177,9 @@ void setup()
     {
       EEPROM.get(1,chip);              //chip type for all channels
       EEPROM.get(2,selChan);           //read the selected channel. 0xFF if externally switched.
-      EEPROM.get(3,refOsc);           //reference oscillator for all channels. 
-      EEPROM.get(12,chanData);         //get channel data structure.
+      EEPROM.get(3,refOsc);           //reference oscillator for all channels.
+      EEPROM.get(11,batcal);          //battery cal factor 
+      EEPROM.get(13,chanData);         //get channel data structure.
       if(selChan == 255)
         {
           channel = readChannelInputs();      //read the channel select bits. 
@@ -239,7 +239,7 @@ void loop()
           {
             seconds = 0;
           }
-        if(batPresent) displayVolts();
+        displayVolts();
       }
 
      if((gpsSec !=-1)&&(gpsS != lastsec))
@@ -428,6 +428,7 @@ void saveSettings(void)
     EEPROM.put(1,chip);            //save the chip type
     EEPROM.put(2,selChan);         //Save the currently selected channel
     EEPROM.put(3,refOsc);          //reference oscillator for all channels.
-    EEPROM.put(12,chanData);         //get channel data structure. 
+    EEPROM.put(11,batcal);           //battery calibration factor
+    EEPROM.put(13,chanData);         //get channel data structure. 
     EEPROM.commit();
 }
