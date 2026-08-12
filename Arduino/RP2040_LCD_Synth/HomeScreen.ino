@@ -67,9 +67,8 @@
 #define VOLT_W 100
 #define VOLT_H 30
 
-#define BATCAL 492.0
 
-float getVolts(void)
+float getVolts(bool raw)
 {
   uint16_t vbat = 0;
   for(int i=0;i<10;i++)
@@ -77,17 +76,21 @@ float getVolts(void)
     vbat = vbat + analogRead(A3);
    }
   vbat=vbat /10;
-    return (float) vbat/BATCAL;
+  if(raw) return (float) vbat;
+  else
+  return (float) vbat/batcal;
 }
 
 void displayVolts(void)
 {
-  float vbat = getVolts();
+  float vbat = getVolts(0);
+  if((vbat > 1.0) & (vbat < 6.0))
+  {
   char vstr[24];
   tft.fillRect(VOLT_X, VOLT_Y-10, VOLT_W, VOLT_H, TFT_CYAN);
   sprintf(vstr,"Bat:- %0.2f V",vbat);
   drawLabel(VOLT_X, VOLT_Y, vstr, TFT_BLUE,0);
-
+  }
 }
  void homeScreenUpdate(void)
  {
@@ -122,7 +125,7 @@ void displayVolts(void)
   {
     drawTextBox(SAVE_X, SAVE_Y, SAVE_W, SAVE_H, "Save" , true, 0);
   }
-  if(batPresent) displayVolts();
+  displayVolts();
  }
 
  void displayGPS(void)

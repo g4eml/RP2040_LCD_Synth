@@ -32,125 +32,135 @@
 
 //Reference Frequency
 #define REF_LX 10
-#define REF_LY 50
+#define REF_LY 40
 #define REF_X 180
-#define REF_Y 40
+#define REF_Y 30
 #define REF_W 110
 #define REF_H 20
 
 //PFD
 #define PFD_LX 320
-#define PFD_LY 50
+#define PFD_LY 40
 #define PFD_X 370
-#define PFD_Y 40
+#define PFD_Y 30
 #define PFD_W 105
 #define PFD_H 20
 
 //MULT
 #define MULT_LX 10
-#define MULT_LY 80
+#define MULT_LY 65
 #define MULT_X 180
-#define MULT_Y 70
+#define MULT_Y 55
 #define MULT_W 40
 #define MULT_H 20
 
 //Key Shift
 #define KEYSH_LX 10
-#define KEYSH_LY 110
+#define KEYSH_LY 90
 #define KEYSH_X 200
-#define KEYSH_Y 100
+#define KEYSH_Y 80
 #define KEYSH_W 100
 #define KEYSH_H 20
 
 //CWID
 #define CWID_LX 10
-#define CWID_LY 140
+#define CWID_LY 115
 #define CWID_X 100
-#define CWID_Y 130
+#define CWID_Y 105
 #define CWID_W 375
 #define CWID_H 20
 
 //CWSP
 #define CWSP_LX 10
-#define CWSP_LY 170
+#define CWSP_LY 140
 #define CWSP_X 170
-#define CWSP_Y 160
+#define CWSP_Y 130
 #define CWSP_W 50
 #define CWSP_H 20
 
 //CWINT
 #define CWINT_LX 240
-#define CWINT_LY 170
+#define CWINT_LY 140
 #define CWINT_X 405
-#define CWINT_Y 160
+#define CWINT_Y 130
 #define CWINT_W 50
 #define CWINT_H 20
 
 
 //CW Shift
 #define CWSH_LX 10
-#define CWSH_LY 200
+#define CWSH_LY 165
 #define CWSH_X 170
-#define CWSH_Y 190
+#define CWSH_Y 155
 #define CWSH_W 100
 #define CWSH_H 20
 
 //CW Enable
 #define CWEN_LX 300
-#define CWEN_LY 200
+#define CWEN_LY 165
 #define CWEN_X 380
-#define CWEN_Y 190
+#define CWEN_Y 155
 #define CWEN_W 20
 #define CWEN_H 20
 
 //JTmode 0
 #define JTM0_LX 10
-#define JTM0_LY 230
+#define JTM0_LY 190
 #define JTM0_X 125
-#define JTM0_Y 220
+#define JTM0_Y 180
 #define JTM0_W 20
 #define JTM0_H 20
 
 //JTmode JT4
 #define JTM1_LX 155
-#define JTM1_LY 230
+#define JTM1_LY 190
 #define JTM1_X 205
-#define JTM1_Y 220
+#define JTM1_Y 180
 #define JTM1_W 20
 #define JTM1_H 20
 
 //JTmode Q65
 #define JTM2_LX 235
-#define JTM2_LY 230
+#define JTM2_LY 190
 #define JTM2_X 272
-#define JTM2_Y 220
+#define JTM2_Y 180
 #define JTM2_W 20
 #define JTM2_H 20
 
 //Q65 Submode
 #define Q65M_LX 300
-#define Q65M_LY 230
+#define Q65M_LY 190
 #define Q65M_X 390
-#define Q65M_Y 220
+#define Q65M_Y 180
 #define Q65M_W 50
 #define Q65M_H 20
 
 
 //JTT1
 #define JTT1_LX 10
-#define JTT1_LY 260
+#define JTT1_LY 215
 #define JTT1_X 200
-#define JTT1_Y 250
+#define JTT1_Y 205
 #define JTT1_W 100
 #define JTT1_H 20
 
 //JTID
 #define JTID_LX 10
-#define JTID_LY 290
+#define JTID_LY 240
 #define JTID_X 90
-#define JTID_Y 280
+#define JTID_Y 230
 #define JTID_W 200
 #define JTID_H 20
+
+//Spare row (new line) - Y=255, LY=265 available for a new field before the Exit button
+
+//Battery Cal
+#define BATCAL_LX 10
+#define BATCAL_LY 305
+#define BATCAL_X 160
+#define BATCAL_Y 290
+#define BATCAL_W 70
+#define BATCAL_H 30
 
 //exit Button
 
@@ -198,6 +208,8 @@ void configScreenUpdate(void)
   drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
   drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
   drawOnOff(JTM1_X, JTM1_Y, JTM1_W, JTM1_H, chanData[channel].jtMode == 1);
+  drawLabel(BATCAL_LX, BATCAL_LY, "Battery Calibrate", TFT_BLUE,0);
+  drawNumBox(BATCAL_X, BATCAL_Y, BATCAL_W, BATCAL_H, getVolts(0), 2, false);
   if(chip >= 3)
     {
     drawLabel(JTM2_LX, JTM2_LY, "Q65", TFT_BLUE,0);
@@ -367,7 +379,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(Q65M_X, Q65M_Y, Q65M_W, Q65M_H)) 
+      if ((chip >= 3) & (touchZone(Q65M_X, Q65M_Y, Q65M_W, Q65M_H))) 
       {
         char temp[4];
         bool done = false;
@@ -470,6 +482,13 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
+      if(touchZone(BATCAL_X, BATCAL_Y, BATCAL_W, BATCAL_H)) 
+      {
+      ret = getNumber("Enter Measured Voltage ", 4);
+      batcal = round(getVolts(1)/(ret));
+      configScreenUpdate();
+      saveRequired = true;
+      }
       
 
       if (touchZone(EXIT_X, EXIT_Y, EXIT_W, EXIT_H)) 
@@ -479,6 +498,7 @@ void doConfigScreen(void)
     }
   }
 }
+
 
 void checkCwValid(void)
 {
