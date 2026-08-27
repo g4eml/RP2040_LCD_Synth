@@ -41,7 +41,7 @@ int doMemPad(void)
   while(!done)
   {
       // Pressed will be set true is there is a valid touch on the screen
-      bool pressed = tft.getTouch(&t_x, &t_y);
+      bool pressed = getTouchDebounced(&t_x, &t_y);
 
       // / Check if any key coordinate boxes contain the touch coordinates
       for (uint8_t b = 0; b < 10; b++) 
@@ -70,6 +70,8 @@ int doMemPad(void)
         }
       }
   } 
+
+  touchConsumed = true;   // caller's next touch poll will ignore this same physical touch until it's released
 
   return ch;  
 }

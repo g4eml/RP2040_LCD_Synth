@@ -106,10 +106,16 @@ void displayVolts(void)
   sprintf(ms,"(x%d)",chanData[channel].extMult);
   drawLabel(M_LX, M_LY, ms, TFT_BLUE,0); 
   }
+  if(activeChip->hasPowerControl())
+  {
   drawLabel(POWER_LX, POWER_LY, "Power", TFT_BLUE, 1);
   drawNumBox(POWER_X, POWER_Y, POWER_W, POWER_H, chipGetPower() , 0, true);
+  }
+  if(activeChip->hasOutputControl())
+  {
   drawLabel(OUT_LX, OUT_LY, "Output", TFT_BLUE,1);  
   drawOnOff(OUT_X, OUT_Y, OUT_W, OUT_H, chipGetOutput());
+  }
   drawLabel(CHANNEL_LX, CHANNEL_LY, "Channel", TFT_BLUE, 1);
   drawNumBox(CHANNEL_X, CHANNEL_Y, CHANNEL_W, CHANNEL_H, channel , 0, true);
   drawTextBox(CONFIG_X, CONFIG_Y, CONFIG_W, CONFIG_H, "Config" , true, 0);
@@ -146,7 +152,7 @@ void displayVolts(void)
   uint16_t raw = tft.getTouchRawZ();
   if(raw > 300)
   {
-    bool pressed =tft.getTouch(&t_x, &t_y);
+    bool pressed = getTouchDebounced(&t_x, &t_y);
     return pressed;
   }
   else
@@ -168,7 +174,7 @@ void displayVolts(void)
   return true;
   }
 
-  if(touchZone(POWER_X, POWER_Y, POWER_W, POWER_H))
+  if(activeChip->hasPowerControl() && touchZone(POWER_X, POWER_Y, POWER_W, POWER_H))
   {
   ret = getNumber("Enter Power",3);
   chipSetPower(ret);
@@ -176,7 +182,7 @@ void displayVolts(void)
   return true;
   }
 
-  if(touchZone(OUT_X, OUT_Y, OUT_W, OUT_H))
+  if(activeChip->hasOutputControl() && touchZone(OUT_X, OUT_Y, OUT_W, OUT_H))
   {
   chipEnableOutput(!chipGetOutput());
   saveRequired = true;

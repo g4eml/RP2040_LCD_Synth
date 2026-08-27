@@ -86,6 +86,25 @@ bool touchZone(int x, int y, int w, int h)
   return ((t_x > x) && (t_x < x + w) && (t_y > y) && (t_y < y + h));
 }
 
+//Wrapper around tft.getTouch() that reports "not touched" while touchConsumed is
+//true, only reporting real touches again once a genuine release has been seen.
+//Use this everywhere a screen or popup polls for touches, instead of calling
+//tft.getTouch() directly - see the note on touchConsumed for why.
+bool getTouchDebounced(uint16_t *x, uint16_t *y)
+{
+  bool pressed = tft.getTouch(x, y);
+  if(!pressed)
+  {
+    touchConsumed = false;
+    return false;
+  }
+  if(touchConsumed)
+  {
+    return false;
+  }
+  return true;
+}
+
 void touch_calibrate(bool force)
 {
   uint16_t calData[5];

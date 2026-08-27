@@ -1,34 +1,12 @@
-//ADF4351
-#define ADF_LX 125
-#define ADF_LY 15
-#define ADF_X 205
-#define ADF_Y 5
-#define ADF_W 20
-#define ADF_H 20
-
-//MAX2870
-#define MAX_LX 10
-#define MAX_LY 15
-#define MAX_X 90
-#define MAX_Y 5
-#define MAX_W 20
-#define MAX_H 20
-
-//LMX2595
-#define LMX_LX 245
-#define LMX_LY 15
-#define LMX_X 325
-#define LMX_Y 5
-#define LMX_W 20
-#define LMX_H 20
-
-//ADF5355
-#define AD5_LX 365
-#define AD5_LY 15
-#define AD5_X 445
-#define AD5_Y 5
-#define AD5_W 20
-#define AD5_H 20
+//Chip type - single field showing the current chip; tap to open the full
+//auto-populated selection list (see ChipPad.ino). No positions to add here
+//when a new chip type is added.
+#define CHIP_LX 10
+#define CHIP_LY 15
+#define CHIP_X 130
+#define CHIP_Y 5
+#define CHIP_W 200
+#define CHIP_H 20
 
 //Reference Frequency
 #define REF_LX 10
@@ -174,14 +152,8 @@ void configScreenUpdate(void)
 {
   char Q65MODE[7][4]={"15A","15B","15C","30A","30B","30C","30D"};
   tft.fillScreen(TFT_CYAN);
-  drawLabel(MAX_LX, MAX_LY, "MAX2870", TFT_BLUE,0);
-  drawOnOff(MAX_X, MAX_Y, ADF_W, ADF_H, chip == 1);
-  drawLabel(ADF_LX, ADF_LY, "ADF4351", TFT_BLUE,0);
-  drawOnOff(ADF_X, ADF_Y, MAX_W, MAX_H, chip == 2);
-  drawLabel(LMX_LX, LMX_LY, "LMX2595", TFT_BLUE,0);
-  drawOnOff(LMX_X, LMX_Y, LMX_W, LMX_H, chip == 3);
-  drawLabel(AD5_LX, AD5_LY, "ADF5355", TFT_BLUE,0);
-  drawOnOff(AD5_X, AD5_Y, AD5_W, AD5_H, chip == 4);
+  drawLabel(CHIP_LX, CHIP_LY, "Chip Type", TFT_BLUE,0);
+  drawTextBox(CHIP_X, CHIP_Y, CHIP_W, CHIP_H, chipTypeName(chip), false, 0);
   drawLabel(REF_LX, REF_LY, "Reference Oscillator", TFT_BLUE,0);
   drawNumBox(REF_X, REF_Y, REF_W, REF_H, refOsc, 6, false);
   drawLabel(PFD_LX, PFD_LY, "PFD", TFT_BLUE,0);
@@ -204,22 +176,24 @@ void configScreenUpdate(void)
   drawTextBox(JTID_X, JTID_Y, JTID_W, JTID_H, chanData[channel].jtid,false,0);
   drawLabel(JTT1_LX, JTT1_LY, "Digi Tone 1 Offset (Hz)", TFT_BLUE,0);
   drawNumBox(JTT1_X, JTT1_Y, JTT1_W, JTT1_H, (chanData[channel].jtTone1 * 1000000.0) , 0, false);
-  drawLabel(JTM0_LX, JTM0_LY, "Digi Mode Off", TFT_BLUE,0);
-  drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
-  drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
-  drawOnOff(JTM1_X, JTM1_Y, JTM1_W, JTM1_H, chanData[channel].jtMode == 1);
   drawLabel(BATCAL_LX, BATCAL_LY, "Battery Calibrate", TFT_BLUE,0);
   drawNumBox(BATCAL_X, BATCAL_Y, BATCAL_W, BATCAL_H, getVolts(0), 2, false);
-  if(chip >= 3)
+  if(!activeChip->jtDisable)
     {
-    drawLabel(JTM2_LX, JTM2_LY, "Q65", TFT_BLUE,0);
-    drawOnOff(JTM2_X, JTM2_Y, JTM2_W, JTM2_H, chanData[channel].jtMode >= 2);
-    if(chanData[channel].jtMode >1)
-    {
-      drawLabel(Q65M_LX, Q65M_LY, "SubMode", TFT_BLUE,0);
-      drawTextBox(Q65M_X, Q65M_Y, Q65M_W, Q65M_H, Q65MODE[chanData[channel].jtMode - 2],false,0);
-    }
-
+    drawLabel(JTM0_LX, JTM0_LY, "Digi Mode Off", TFT_BLUE,0);
+    drawOnOff(JTM0_X, JTM0_Y, JTM0_W, JTM0_H, chanData[channel].jtMode == 0);
+    drawLabel(JTM1_LX, JTM1_LY, "JT4G", TFT_BLUE,0);
+    drawOnOff(JTM1_X, JTM1_Y, JTM1_W, JTM1_H, chanData[channel].jtMode == 1);
+    if(!activeChip->jt4Only)
+      {
+      drawLabel(JTM2_LX, JTM2_LY, "Q65", TFT_BLUE,0);
+      drawOnOff(JTM2_X, JTM2_Y, JTM2_W, JTM2_H, chanData[channel].jtMode >= 2);
+      if(chanData[channel].jtMode >1)
+        {
+        drawLabel(Q65M_LX, Q65M_LY, "SubMode", TFT_BLUE,0);
+        drawTextBox(Q65M_X, Q65M_Y, Q65M_W, Q65M_H, Q65MODE[chanData[channel].jtMode - 2],false,0);
+        }
+      }
     }
   drawTextBox(EXIT_X, EXIT_Y, EXIT_W, EXIT_H, "Exit" , true, 0);
 }
@@ -233,50 +207,24 @@ void doConfigScreen(void)
   configScreenUpdate();
   while(!done)
   {
-    pressed = tft.getTouch(&t_x, &t_y);
+    pressed = getTouchDebounced(&t_x, &t_y);
     if(pressed)
     {
-      if(touchZone(ADF_X, ADF_Y, ADF_W, ADF_H))
+      if(touchZone(CHIP_X, CHIP_Y, CHIP_W, CHIP_H))
       {
-        chip = 2;
-        changeChip();
-        chipEncodeRegs();
-        chipUpdate();
+        uint8_t newChip = doChipSelect();
+        if(newChip != chip)
+        {
+          chip = newChip;
+          changeChip();
+          chipEncodeRegs();
+          chipUpdate();
+          saveRequired = true;
+        }
         configScreenUpdate();
-        saveRequired = true;
       }
 
-      if(touchZone(MAX_X, MAX_Y, MAX_W, MAX_H))
-      {
-        chip = 1;
-        changeChip();
-        chipEncodeRegs();
-        chipUpdate();
-        configScreenUpdate();
-        saveRequired = true;
-      }
-
-      if(touchZone(LMX_X, LMX_Y, LMX_W, LMX_H))
-      {
-        chip = 3;
-        changeChip();
-        chipEncodeRegs();
-        chipUpdate();
-        configScreenUpdate();
-        saveRequired = true;
-      }
-
-      if(touchZone(AD5_X, AD5_Y, AD5_W, AD5_H))
-      {
-        chip = 4;
-        changeChip();
-        chipEncodeRegs();
-        chipUpdate();
-        configScreenUpdate();
-        saveRequired = true;
-      }
-
-      if (touchZone(REF_X, REF_Y, REF_W, REF_H)) 
+      else if (touchZone(REF_X, REF_Y, REF_W, REF_H)) 
       {
       ret = getNumber("Enter Ref. Freq. (MHz)", 12);
       refOsc = ret;
@@ -284,7 +232,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(PFD_X, PFD_Y, PFD_W, PFD_H)) 
+      else if (touchZone(PFD_X, PFD_Y, PFD_W, PFD_H)) 
       {
       double temp = chipGetFrequency();
       ret = getNumber("Enter PFD Freq. (MHz)", 12);
@@ -295,7 +243,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(MULT_X, MULT_Y, MULT_W, MULT_H)) 
+      else if (touchZone(MULT_X, MULT_Y, MULT_W, MULT_H)) 
       {
       ret = getNumber("Enter Multiplier", 3);
       chanData[channel].extMult = ret;
@@ -303,7 +251,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H)) 
+      else if (touchZone(KEYSH_X, KEYSH_Y, KEYSH_W, KEYSH_H)) 
       {
       ret = getNumber("Enter Ext Key FSK (Hz)", 5);
       chanData[channel].keyShift = ret ;
@@ -320,7 +268,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(CWID_X, CWID_Y, CWID_W, CWID_H)) 
+      else if (touchZone(CWID_X, CWID_Y, CWID_W, CWID_H)) 
       {
       chanData[channel].cwidLen = getText("Enter CWID", &chanData[channel].cwid[1], 32);
       checkCwValid();
@@ -328,7 +276,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(CWSP_X, CWSP_Y, CWSP_W, CWSP_H)) 
+      else if (touchZone(CWSP_X, CWSP_Y, CWSP_W, CWSP_H)) 
       {
       ret = getNumber("Enter CW Speed (WPM)", 3);
       chanData[channel].cwidSpeed = ret;
@@ -337,7 +285,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(CWINT_X, CWINT_Y, CWINT_W, CWINT_H)) 
+      else if (touchZone(CWINT_X, CWINT_Y, CWINT_W, CWINT_H)) 
       {
       ret = getNumber("Enter CW Interval (Secs)", 3);
       chanData[channel].cwidInterval = ret;
@@ -346,7 +294,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(CWSH_X, CWSH_Y, CWSH_W, CWSH_H)) 
+      else if (touchZone(CWSH_X, CWSH_Y, CWSH_W, CWSH_H)) 
       {
       ret = getNumber("Enter CW ID FSK (Hz)", 5);
       chanData[channel].cwidShift = ret ;
@@ -356,7 +304,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(CWEN_X, CWEN_Y, CWEN_W, CWEN_H)) 
+      else if (touchZone(CWEN_X, CWEN_Y, CWEN_W, CWEN_H)) 
       {
       if(chanData[channel].fskMode & CWIDBIT)
         {
@@ -370,7 +318,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if (touchZone(JTT1_X, JTT1_Y, JTT1_W, JTT1_H)) 
+      else if (touchZone(JTT1_X, JTT1_Y, JTT1_W, JTT1_H)) 
       {
       ret = getNumber("Enter Tone 1 Offset (Hz)", 5);
       chanData[channel].jtTone1 = ret ;
@@ -379,7 +327,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if ((chip >= 3) & (touchZone(Q65M_X, Q65M_Y, Q65M_W, Q65M_H))) 
+      else if ((!activeChip->jt4Only) & (touchZone(Q65M_X, Q65M_Y, Q65M_W, Q65M_H))) 
       {
         char temp[4];
         bool done = false;
@@ -428,7 +376,7 @@ void doConfigScreen(void)
       }
 
 
-      if (touchZone(JTID_X, JTID_Y, JTID_W, JTID_H)) 
+      else if (touchZone(JTID_X, JTID_Y, JTID_W, JTID_H)) 
       {
         if(chanData[channel].jtMode == 1)
         {
@@ -455,14 +403,14 @@ void doConfigScreen(void)
         saveRequired = true;
       }
 
-      if (touchZone(JTM0_X, JTM0_Y, JTM0_W, JTM0_H)) 
+      else if ((!activeChip->jtDisable) && (touchZone(JTM0_X, JTM0_Y, JTM0_W, JTM0_H))) 
       {
       chanData[channel].jtMode = 0;
       configScreenUpdate();
       saveRequired = true;
       }
 
-      if (touchZone(JTM1_X, JTM1_Y, JTM1_W, JTM1_H)) 
+      else if ((!activeChip->jtDisable) && (touchZone(JTM1_X, JTM1_Y, JTM1_W, JTM1_H))) 
       {
       chanData[channel].jtMode = 1;
       seconds = -1;                       //reset the timing after using the menu.
@@ -472,7 +420,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if ((chip >= 3) && (touchZone(JTM2_X, JTM2_Y, JTM2_W, JTM2_H))) 
+      else if ((!activeChip->jt4Only) && (touchZone(JTM2_X, JTM2_Y, JTM2_W, JTM2_H))) 
       {
       chanData[channel].jtMode = 2;
       seconds = -1;                       //reset the timing after using the menu.
@@ -482,7 +430,7 @@ void doConfigScreen(void)
       saveRequired = true;
       }
 
-      if(touchZone(BATCAL_X, BATCAL_Y, BATCAL_W, BATCAL_H)) 
+      else if(touchZone(BATCAL_X, BATCAL_Y, BATCAL_W, BATCAL_H)) 
       {
       ret = getNumber("Enter Measured Voltage ", 4);
       batcal = round(getVolts(1)/(ret));
@@ -491,7 +439,7 @@ void doConfigScreen(void)
       }
       
 
-      if (touchZone(EXIT_X, EXIT_Y, EXIT_W, EXIT_H)) 
+      else if (touchZone(EXIT_X, EXIT_Y, EXIT_W, EXIT_H)) 
       {
       done = true;
       }  

@@ -6,7 +6,13 @@
 #define MAX2870CKPin 6         //GPO 6 Connect to Max2870  CLK Pin 
 #define MAX2870DATPin 7         //GPO 7 Connect to Max2870  DATA Pin
 
+#include "SynthChip.h"
 
+class Max2870Chip : public SynthChip
+{
+public:
+
+Max2870Chip() { name = "MAX2870"; }
 
 //MAX2870 Register bits. Default settings give output at 435.100 MHz with 100MHz reference clock 4MHz PFD.
 
@@ -61,7 +67,7 @@ bool Max2870_F01;
 byte Max2870_LD;
 bool Max2870_MUX_MSB;
 
-void Max2870SetDefault(void)
+void setDefault(void) override
 {
     //Reg 0
   Max2870_INT = 0;
@@ -113,9 +119,20 @@ void Max2870SetDefault(void)
   Max2870_F01 = 0;
   Max2870_LD = 1;
   Max2870_MUX_MSB = 0;
+
+  //Note: this used to call setFrequency(0) here, which (for this chip) means
+  //"prompt interactively over serial for a frequency". That's fine when
+  //setDefault() is called from the interactive serial menu ('D'), but hangs
+  //any non-interactive caller (blank-EEPROM startup, or the touchscreen
+  //project's chip-select buttons) waiting for serial input that will never
+  //arrive. The default register values set above already give a valid
+  //default frequency, so there is nothing to prompt for here.
+
+  encodeRegs();
+  update();
 }
 
-void Max2870SetParameters(void)
+void setParameters(void) override
 {
   String resp;
   String param;
@@ -214,13 +231,13 @@ void Max2870SetParameters(void)
 
 
     handled:
-    Max2870EncodeRegs();
-    Max2870Update();
+    encodeRegs();
+    update();
 
   }
 }
 
-void Max2870Init(void)
+void init(void) override
 {
   numberOfRegs = 6;                   //number of registers in the current chip type
   numberOfBits = 32;                   //number of bits in each register
@@ -229,6 +246,7 @@ void Max2870Init(void)
   maxOsc = 201;
   minOsc = 9;
   jt4Only = true;
+  jtDisable = false;
   pinMode(MAX2870CEPin,OUTPUT);
   digitalWrite(MAX2870CEPin,HIGH); 
   pinMode(MAX2870LEPin,OUTPUT);
@@ -259,7 +277,7 @@ void Max2870Send(int32_t val)
 }
 
 
-void Max2870EncodeRegs(void)
+void encodeRegs(void) override
 {
   chanData[channel].reg[0] = (Max2870_INT << 31) | (Max2870_N << 15) | (Max2870_FRAC << 3);
   chanData[channel].reg[1] = (Max2870_CPOC << 31) | (Max2870_CPL << 29) | (Max2870_CPT << 27) | (Max2870_P << 15) | (Max2870_M << 3) | 1 ;
@@ -269,7 +287,7 @@ void Max2870EncodeRegs(void)
   chanData[channel].reg[5] = (Max2870_F01 << 24) | (Max2870_LD << 22) | (Max2870_MUX_MSB << 18) | 5; 
 }
 
-void Max2870DecodeRegs(void)
+void decodeRegs(void) override
 {
   Max2870_INT = (chanData[channel].reg[0] >> 31) & 0x01;
   Max2870_N = (chanData[channel].reg[0] >> 15) & 0xFFFF;
@@ -318,7 +336,7 @@ void Max2870DecodeRegs(void)
 
 }
 
-void Max2870Update(void)
+void update(void) override
 {
   Max2870Send(chanData[channel].reg[5]);
   Max2870Send(chanData[channel].reg[4]);
@@ -329,7 +347,7 @@ void Max2870Update(void)
 }
 
 
-double Max2870CalcPFD(double rpfd)
+double calcPfd(double rpfd) override
 {
   double r = 0;
   bool dub = 0;
@@ -361,7 +379,7 @@ double Max2870CalcPFD(double rpfd)
   Serial.println(" MHz");
   Serial.println("PFD has not been changed");
 
-  return Max2870GetPfd();
+  return getPfd();
 
   done:
   if(r < 1)  r = 1;
@@ -393,7 +411,7 @@ double Max2870CalcPFD(double rpfd)
 }
 
 
-double Max2870GetPfd(void)
+double getPfd(void) override
 {
   double pfd = refOsc;
   double r = (double) Max2870_R;
@@ -403,7 +421,7 @@ double Max2870GetPfd(void)
   return pfd;
 }
 
-void Max2870SetFrequency(double direct)
+void setFrequency(double direct) override
 {
   bool freqOK = false;
 
@@ -417,7 +435,7 @@ void Max2870SetFrequency(double direct)
   int bestnom;
   int bestden;
 
-  pfd = Max2870GetPfd();
+  pfd = getPfd();
 
   freqOK = false;
   if(direct ==0)
@@ -434,13 +452,13 @@ void Max2870SetFrequency(double direct)
       Serial.print("\nEnter Required Frequency in MHz -->");
       freq = inputFloat();        
       }
-      if((freq > 23.500) && (freq <= 6000.000))
+      if((freq > 23.500) && (freq <= 6500.000))
         {
           freqOK = true;
         }
       else
         {
-          Serial.println("Synthesiser Frequency must be between 23.5 and 6000 MHz");
+          Serial.println("Synthesiser Frequency must be between 23.5 and 6500 MHz");
         }
     }
   }
@@ -449,7 +467,7 @@ void Max2870SetFrequency(double direct)
     freq = direct;
   }
 //Calculate the required output divider
-  if((freq >= 3000.000) && (freq <= 6000.000))  Max2870_DIVA = 0;
+  if(freq >= 3000.000) Max2870_DIVA = 0;
   if((freq >= 1500.000) && (freq < 3000.000))  Max2870_DIVA = 1;
   if((freq >= 750.000) && (freq < 1500.000))  Max2870_DIVA = 2;
   if((freq >= 375.000) && (freq < 750.000))  Max2870_DIVA = 3; 
@@ -495,11 +513,11 @@ void Max2870SetFrequency(double direct)
   Max2870_M = bestden;
   Max2870_FRAC = bestnom;
 
-  Max2870EncodeRegs();
+  encodeRegs();
 }
 
 
-void Max2870CalcFreq(void)
+void calcFreq(void) override
 {
   double pfd;
   double vco;
@@ -518,13 +536,13 @@ void Max2870CalcFreq(void)
 
   Serial.println();
   Serial.print("Chip type is ");
-  Serial.println(chipName[chip]);
+  Serial.println(name);
   Serial.print("Reference Oscillator = ");
   Serial.print(refOsc,10);
   Serial.println(" MHz");
 
 
-  pfd = Max2870GetPfd();
+  pfd = getPfd();
 
 
   Serial.print("PFD = ");
@@ -588,7 +606,7 @@ void Max2870CalcFreq(void)
     }
 }
 
-double Max2870GetFrequency(void)
+double getFrequency(void) override
 {
   double pfd;
   double vco;
@@ -605,7 +623,7 @@ double Max2870GetFrequency(void)
   m = (double) Max2870_M;
   f = (double) Max2870_FRAC;
 
-  pfd = Max2870GetPfd();
+  pfd = getPfd();
 
   if(Max2870_INT == 0)
   {
@@ -636,7 +654,7 @@ double Max2870GetFrequency(void)
   return vco / diva;
 }
 
- void Max2870jtShift(uint8_t val)
+ void jtShift(uint8_t val) override
 {
   static uint8_t lastval;
   
@@ -648,7 +666,7 @@ double Max2870GetFrequency(void)
 
 }
 
-  void Max2870FskKey(bool key)
+  void fskKey(bool key) override
 {
   static bool lastkey;
   
@@ -667,7 +685,7 @@ double Max2870GetFrequency(void)
     }
 }
 
-  void Max2870ExtKey(bool key)
+  void extKey(bool key) override
 {
   if(key)
     {
@@ -681,23 +699,44 @@ double Max2870GetFrequency(void)
     }
 }
 
-void Max2870SaveFskShift(void)
+void saveFskShift(void) override
 {
   cwidKeyUpN = Max2870_N;
   cwidKeyUpDen = Max2870_M;
   cwidKeyUpNum = Max2870_FRAC;
 }
 
-void Max2870SaveKeyShift(void)
+void saveKeyShift(void) override
 {
   ExtKeyUpN = Max2870_N;
   ExtKeyUpDen = Max2870_M;
   ExtKeyUpNum = Max2870_FRAC;
 }
 
-void Max2870SaveJt(uint8_t index)
+void saveJt(uint8_t index) override
 {
   jtN[index] = Max2870_N;
   jtDen[index] = Max2870_M;
   jtNum[index] = Max2870_FRAC;
 }
+
+//--- RF output power/enable control, used by the touchscreen UI ---
+uint8_t getPower(void) override { return Max2870_APWR; }
+void setPower(uint8_t p) override
+{
+  if(p>3) p=3;
+  Max2870_APWR = p;
+  encodeRegs();
+  update();
+}
+bool getOutput(void) override { return Max2870_RFA_EN; }
+void enableOutput(bool o) override
+{
+  Max2870_RFA_EN = o;
+  encodeRegs();
+  update();
+}
+
+};
+
+Max2870Chip max2870Chip;             //the single instance of this chip driver
