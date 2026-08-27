@@ -6,7 +6,13 @@
 #define ADF4351CKPin 6         //GPO 6 Connect to ADF4351 CLK Pin
 #define ADF4351DATPin 7         //GPO 7 Connect to ADF4351 DAT Pin
 
+#include "SynthChip.h"
 
+class ADF4351Chip : public SynthChip
+{
+public:
+
+ADF4351Chip() { name = "ADF4351"; }
 
 //ADF4351 Register bits.
 //REG 0
@@ -57,7 +63,7 @@ byte ADF4351_RFPWR;
 //REG 5
 byte ADF4351_LD = 1;
 
-void ADF4351SetDefault(void)
+void setDefault(void) override
 {
   //ADF4351 Register bits. Default settings give output at 435.100 MHz with 10MHz PFD.
   //REG 0
@@ -108,9 +114,14 @@ void ADF4351SetDefault(void)
   //REG 5
   ADF4351_LD = 1;
 
+  //See the note in MAX2870.ino's setDefault() - setFrequency(0) here would
+  //hang any non-interactive caller waiting for serial input.
+  encodeRegs();
+  update();
+
 }
 
-void ADF4351SetParameters(void)
+void setParameters(void) override
 {
   String resp;
   String param;
@@ -206,14 +217,14 @@ void ADF4351SetParameters(void)
 
 
     handled:
-    ADF4351EncodeRegs();
-    ADF4351Update();
+    encodeRegs();
+    update();
 
   }
 }
 
 
-void ADF4351Init(void)
+void init(void) override
 {
   numberOfRegs = 6;                   //number of registers in the current chip type
   numberOfBits = 32;                   //number of bits in each register
@@ -222,6 +233,7 @@ void ADF4351Init(void)
   maxOsc = 251;
   minOsc = 9;
   jt4Only = true;
+  jtDisable = false;
   pinMode(ADF4351CEPin,OUTPUT);
   digitalWrite(ADF4351CEPin,HIGH); 
   pinMode(ADF4351LEPin,OUTPUT);
@@ -252,7 +264,7 @@ void ADF4351Send(int32_t val)
 }
 
 
-void ADF4351EncodeRegs(void)
+void encodeRegs(void) override
 {
   chanData[channel].reg[0] = (ADF4351_INT << 15) | (ADF4351_FRAC << 3);
   chanData[channel].reg[1] = (ADF4351_PH << 28) | (ADF4351_PR << 27) | (ADF4351_P << 15) | (ADF4351_M << 3) | 1 ;
@@ -262,7 +274,7 @@ void ADF4351EncodeRegs(void)
   chanData[channel].reg[5] = (ADF4351_LD << 22) | (3 << 19) | 5; 
 }
 
-void ADF4351DecodeRegs(void)
+void decodeRegs(void) override
 {
   ADF4351_INT = (chanData[channel].reg[0] >> 15) & 0xFFFF;
   ADF4351_FRAC = (chanData[channel].reg[0] >> 3) & 0x0FFF;
@@ -308,7 +320,7 @@ void ADF4351DecodeRegs(void)
 
 }
 
-void ADF4351Update(void)
+void update(void) override
 {
   ADF4351Send(chanData[channel].reg[5]);
   ADF4351Send(chanData[channel].reg[4]);
@@ -319,7 +331,7 @@ void ADF4351Update(void)
 }
 
 
-double ADF4351CalcPFD(double rpfd)
+double calcPfd(double rpfd) override
 {
   double r = 0;
   bool dub = 0;
@@ -349,7 +361,7 @@ double ADF4351CalcPFD(double rpfd)
   Serial.println(" MHz");
   Serial.println("PFD has not been changed");
   
-  return ADF4351GetPfd();
+  return getPfd();
 
   done:
   if(r < 1) r = 1;
@@ -364,7 +376,7 @@ double ADF4351CalcPFD(double rpfd)
 }
 
 
-double ADF4351GetPfd(void)
+double getPfd(void) override
 {
   double pfd = refOsc;
   double r = (double) ADF4351_R; 
@@ -374,10 +386,9 @@ double ADF4351GetPfd(void)
   return pfd;
 }
 
-void ADF4351SetFrequency(double direct)
+void setFrequency(double direct) override
 {
   bool freqOK = false;
-
   double freq;
   double pfd;
   double n;
@@ -388,7 +399,7 @@ void ADF4351SetFrequency(double direct)
   int bestnom;
   int bestden;
 
-  pfd = ADF4351GetPfd();
+  pfd = getPfd();
 
   freqOK = false;
   if(direct ==0)
@@ -406,13 +417,13 @@ void ADF4351SetFrequency(double direct)
       freq = inputFloat();        
       }
 
-      if((freq > 34.375) && (freq <= 4400.000))
+      if((freq > 34.375) && (freq <= 4500.000))
         {
           freqOK = true;
         }
       else
         {
-          Serial.println("Synthesiser Frequency must be between 34.375 and 4400 MHz");
+          Serial.println("Synthesiser Frequency must be between 34.375 and 4500 MHz");
         }
     }
    }
@@ -422,7 +433,7 @@ void ADF4351SetFrequency(double direct)
    }
 
 //Calculate the required output divider
-  if((freq >= 2200.000) && (freq <= 4400.000))  ADF4351_RFDIV = 0;
+  if(freq >= 2200.000)  ADF4351_RFDIV = 0;
   if((freq >= 1100.000) && (freq < 2200.000))  ADF4351_RFDIV = 1;
   if((freq >= 550.000) && (freq < 1100.000))  ADF4351_RFDIV = 2;
   if((freq >= 275.000) && (freq < 550.000))  ADF4351_RFDIV = 3; 
@@ -470,11 +481,11 @@ void ADF4351SetFrequency(double direct)
   ADF4351_M = bestden;
   ADF4351_FRAC = bestnom;
 
-  ADF4351EncodeRegs();
+  encodeRegs();
 }
 
 
-void ADF4351CalcFreq(void)
+void calcFreq(void) override
 {
   double pfd;
   double vco;
@@ -493,12 +504,12 @@ void ADF4351CalcFreq(void)
 
   Serial.println();
   Serial.print("Chip type is ");
-  Serial.println(chipName[chip]);
+  Serial.println(name);
   Serial.print("Reference Oscillator = ");
   Serial.print(refOsc,10);
   Serial.println(" MHz");
 
-  pfd = ADF4351GetPfd();
+  pfd = getPfd();
 
   Serial.print("PFD = ");
   Serial.print(pfd , 10);
@@ -547,7 +558,7 @@ void ADF4351CalcFreq(void)
     }
 }
   
-double ADF4351GetFrequency(void)
+double getFrequency(void) override
 {
   double pfd;
   double vco;
@@ -564,7 +575,7 @@ double ADF4351GetFrequency(void)
   m = (double) ADF4351_M;
   f = (double) ADF4351_FRAC;
 
-  pfd = ADF4351GetPfd();
+  pfd = getPfd();
 
   if(ADF4351_FB == 1)
     {
@@ -580,7 +591,7 @@ double ADF4351GetFrequency(void)
   return vco / diva;
 }
 
-  void ADF4351jtShift(uint8_t val)
+  void jtShift(uint8_t val) override
 {
   static uint8_t lastval;
   
@@ -592,7 +603,7 @@ double ADF4351GetFrequency(void)
 }
 
 
-  void ADF4351FskKey(bool key)
+  void fskKey(bool key) override
 {
   static bool lastkey;
   
@@ -611,7 +622,7 @@ double ADF4351GetFrequency(void)
     }
 }
 
-void ADF4351ExtKey(bool key)
+void extKey(bool key) override
 {
   if(key)
     {
@@ -625,23 +636,44 @@ void ADF4351ExtKey(bool key)
     }
 }
 
-void ADF4351SaveFskShift(void)
+void saveFskShift(void) override
 {
   cwidKeyUpN = ADF4351_INT;
   cwidKeyUpDen = ADF4351_M;
   cwidKeyUpNum = ADF4351_FRAC;
 }
 
-void ADF4351SaveKeyShift(void)
+void saveKeyShift(void) override
 {
   ExtKeyUpN = ADF4351_INT;
   ExtKeyUpDen = ADF4351_M;
   ExtKeyUpNum = ADF4351_FRAC;
 }
 
-void ADF4351SaveJt(uint8_t index)
+void saveJt(uint8_t index) override
 {
   jtN[index] = ADF4351_INT;
   jtDen[index] = ADF4351_M;
   jtNum[index] = ADF4351_FRAC;
 }
+
+//--- RF output power/enable control, used by the touchscreen UI ---
+uint8_t getPower(void) override { return ADF4351_RFPWR; }
+void setPower(uint8_t p) override
+{
+  if(p>3) p=3;
+  ADF4351_RFPWR = p;
+  encodeRegs();
+  update();
+}
+bool getOutput(void) override { return ADF4351_RFEN; }
+void enableOutput(bool o) override
+{
+  ADF4351_RFEN = o;
+  encodeRegs();
+  update();
+}
+
+};
+
+ADF4351Chip adf4351Chip;             //the single instance of this chip driver

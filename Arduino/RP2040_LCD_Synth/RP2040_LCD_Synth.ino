@@ -1,10 +1,13 @@
-// Synthesiser controller 
+// Synthesiser controller with touchscreen LCD interface
 // Colin Durbridge G4EML 2024
-// Optional support for LCD controller using crowpanel 3.5" HMI panel. 
+// Optional support for LCD controller using crowpanel 3.5" HMI panel.
+
+#include "SynthChip.h"
+#include "ChipList.h"
 
 #define LCDVERSION
 
-#define VERSION 1.12
+#define VERSION 2.00
 
 #define EEPROMVER 0x53
 
@@ -12,8 +15,24 @@
 
 //Global values...
 
-enum chip { NONE, MAX2870 , ADF4351 , LMX2595, ADF5355 };
-String chipName[] = {"None","MAX2870", "ADF4351" , "LMX2595" , "ADF5355"};
+//enum chipType and NUM_CHIP_TYPES are both generated from CHIP_LIST in ChipList.h -
+//to add a new chip type, edit that list, not this one.
+enum chipType
+{
+  NONE,
+  #define CHIP_ENTRY(name, instance) name,
+  CHIP_LIST
+  #undef CHIP_ENTRY
+  NUM_CHIP_TYPES        //always 1 past the last valid chip type; also equals the number of chip types including NONE
+};
+
+//Each chip's display name is set in its own constructor (see e.g. MAX2870.ino) and
+//retrieved via chipTypeName(index) in redirects.ino - there is no separate name list to update.
+
+//Pointer to the SynthChip object for the currently selected chip type.
+//Set (and kept in sync with "chip") by chipInit() in redirects.ino.
+//To add a new chip type see the notes at the top of SynthChip.h.
+SynthChip* activeChip = nullptr;
 
 bool saveRequired = false;
 
@@ -47,7 +66,7 @@ char cwid[32] = " ";                    // up to 30 CWID characters
 uint8_t jtMode = 0;                     //JT mode
 char jtid[13] = " ";                    //JT Message
 float jtTone1 = 0;                      //JT Tone 1 Offset from Nominal Frequency (Mhz)
-uint8_t jtInterval = 60;
+uint8_t jtInterval = 60;              //Digi mode Interval in seconds.
 uint8_t extMult = 1;                    //Multiplcation factor for external frequency multiplier. (used to calculate the correct FSK Shifts.)
 };
 
@@ -56,13 +75,10 @@ struct chanstruct chanData[NUMBEROFCHANNELS];
 
 //End of saved values
 
-int numberOfRegs = 6;                     //number of registers in the current chip type
-int numberOfBits = 32;                    //number of bits in each register
-float maxPfd = 105.0;                     //maximum PFD frequency
-float minPfd = 0;                         //Minimum PFD
-float maxOsc = 100;                       //Maximum Reference Oscillater Freq
-float minOsc = 0;                         //Minimum Reference Oscillator Freq
-bool jt4Only = true;                      //lower spec chips only support JT4 due to limited fractional register size.  
+//Note: numberOfRegs, maxPfd, minPfd, maxOsc, minOsc, jt4Only and jtDisable used to be
+//duplicated here as globals, kept in sync with the selected chip by chipInit(). They are
+//now read directly from activeChip (e.g. activeChip->numberOfRegs) wherever needed, so
+//there is only one copy of this data - the one on the chip object itself.
 uint8_t channel = 0;                      //currently active channel.
 
 uint32_t cwidKeyUpN = 1;                  //key up value for the PLL N used to shift the frequency for CWID. Calculated by cwidInit()
@@ -83,9 +99,10 @@ void saveSettings(void);
 
 #define JT4G_TONE_SPACING        315         // 72 * 4.37 Hz
 #define JT4_DELAY                229         // Delay value for JT4
-#define Q65_TONE_SPACING        3.33333       // 3.333 Hz for Mode 30A
+#define Q65_TONE_SPACING        3.33333       // 3.3333 Hz for Mode 30A
 #define Q65_DELAY               150         // Delay in ms for Q65 15
 #define Q65_SYMBOL_COUNT     85          //85 symbols
+
 
 uint8_t jtBuffer[256];
 uint8_t jtSymbolCount;
@@ -108,28 +125,19 @@ int nextcwidTime = 60;                   //trigger time for next CWID
 
 bool jtActive = false;                  //flag to start Jt Sending
 int  nextjtTime = 1;                       //trigger time for next JT sequence
+
 bool lastKeyState = 1;                 //external key state last pass 1 = key up 0 = key down
 
 #define GPSTXPin 0                      //Serial data to GPS module 
 #define GPSRXPin 1                      //SeriaL data from GPS module
 
-#if defined(LCDVERSION)                 //LCD version uses different IO pins for channel select.
-
+//The touchscreen board's TFT_eSPI wiring uses GPIO 10-14, so channel select and
+//external key use different pins here than on the non-LCD board.
 #define CHANSEL0Pin 19                  //External channel select pins. Pulled up to 3V3. High is Logic 0 Low is Logic 1
 #define CHANSEL1Pin 20
 #define CHANSEL2Pin 21
 #define CHANSEL3Pin 26
 #define EXTKEYPin 27                    //External Key input Pulled upp to 3V3 ground to key
-
-#else
-
-#define CHANSEL0Pin 10                  //External channel select pins. Pulled up to 3V3. High is Logic 0 Low is Logic 1
-#define CHANSEL1Pin 11
-#define CHANSEL2Pin 12
-#define CHANSEL3Pin 13
-#define EXTKEYPin 14                    //External Key input Pulled upp to 3V3 ground to key.
-
-#endif
 
 char gpsBuffer[256];                     //GPS data buffer
 int gpsPointer;                          //GPS buffer pointer. 
@@ -139,13 +147,11 @@ bool gpsActive = false;
 int lastsec=0;
 int gpsH=0;
 int gpsM=0;
-int gpsS=0;            
+int gpsS=0;
 
 bool showSync=false;
 bool showingGPS = false;
 int gpstimeout =0;
-
-#if defined(LCDVERSION)
 
 #include <TFT_eSPI.h>      // Hardware-specific library. Must be pre-configured for this display and touchscreen
 TFT_eSPI tft = TFT_eSPI(); // Invoke custom library
@@ -153,7 +159,13 @@ TFT_eSPI tft = TFT_eSPI(); // Invoke custom library
 #define REPEAT_CAL false
 uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
 
-#endif
+//Set true by a screen/pad right before it returns after acting on a touch (e.g.
+//selecting an item from a popup list). While true, getTouchDebounced() reports
+//"not touched" regardless of what the touch controller says, so the same
+//physical touch can't immediately bleed through and re-trigger something on the
+//screen underneath as soon as it redraws. Cleared automatically the first time
+//a genuine release is seen. See getTouchDebounced() in commonScreen.ino.
+bool touchConsumed = false;
 
 void setup() 
 {
@@ -191,13 +203,12 @@ void setup()
     }
   else
     {
-      changeChip();                 //force reset of all channels. 
+      changeChip();                 //blank/invalid EEPROM - force reset of all channels to valid defaults.
     }
    chipInit();
    initChannel();
    seconds = -1;
 
-#if defined(LCDVERSION)
   tft.init();
   tft.setRotation(1);
   if(homeScreenTouched())
@@ -211,14 +222,13 @@ void setup()
     touch_calibrate(0);
    }
   homeScreenUpdate();
-#endif
 
 }
 
 void loop() 
 {
   Serial.print("\n");
-  Serial.print(chipName[chip]);
+  Serial.print(chipTypeName(chip));
   Serial.println(" Synthesiser programmed, Sleeping");
 
   chipUpdate();
@@ -268,7 +278,6 @@ void loop()
       }
 
 //synchronise the local clock to the GPS clock if available
-
 
      if(selChan == 255)             //external chaannel selection
        {
@@ -351,8 +360,6 @@ void loop()
 
       }
 
-
-#if defined(LCDVERSION)
    if(homeScreenTouched())
     {
     if(processHomeScreenTouch())
@@ -360,8 +367,6 @@ void loop()
        homeScreenUpdate();
       }
     }   
-#endif
-
 
   }  
 }

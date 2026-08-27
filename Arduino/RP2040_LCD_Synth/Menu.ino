@@ -20,7 +20,6 @@ int32_t inputNumber(void)
     {
       while(Serial.available() == 0);
       ch = Serial.read();
-      Serial.print(ch);
       switch(ch)
         {
           case 13:
@@ -29,11 +28,13 @@ int32_t inputNumber(void)
           break;
           
           case '0' ... '9':
+          Serial.print(ch);
           if(n == -1) n = 0;
           n = (n * 10) + (ch - '0');
           break;
 
           case '-':
+          Serial.print(ch);
           minus = true;
           break;
 
@@ -56,6 +57,9 @@ double inputFloat(void)
   bool done = false;
   String s;
   char ch;
+  #if !defined(LCDVERSION)          //no WS2812 LED on the touchscreen board
+  put_pixel(RED);
+  #endif
   flushInput();
   s = "";
     while(!done)
@@ -78,7 +82,9 @@ double inputFloat(void)
         }
       }
     }
-
+  #if !defined(LCDVERSION)
+  put_pixel(BLUE);
+  #endif
   return s.toDouble();
 }
 
@@ -87,6 +93,9 @@ String inputString(bool uppercase)
   bool done = false;
   char ch;
   String s;
+  #if !defined(LCDVERSION)          //no WS2812 LED on the touchscreen board
+  put_pixel(RED);
+  #endif
   flushInput();
   s = "";
     while(!done)
@@ -116,6 +125,9 @@ String inputString(bool uppercase)
         }
       }
     }
+  #if !defined(LCDVERSION)
+  put_pixel(BLUE);
+  #endif
   return s;
 }
 
@@ -126,7 +138,7 @@ void showMenu(String *list)
 
  Serial.print("\n");
  Serial.print("Chip type is ");
- Serial.println(chipName[chip]);
+ Serial.println(chipTypeName(chip));
  Serial.print("Ref Osc =  ");
  Serial.print(refOsc , 10);
  Serial.println(" MHz");
@@ -134,7 +146,14 @@ void showMenu(String *list)
  if(selChan == 255)
   {
     Serial.print(" (Externally Selected) = ");
-    channel = readChannelInputs();
+    uint8_t newchannel = readChannelInputs();
+    if(newchannel != channel)
+    {
+    channel = newchannel;
+    chipUpdate();
+    initChannel();      
+    }
+
   }
 else
   {
@@ -151,14 +170,31 @@ else
 char getSelection(String p)
 {
  char resp;
-
+  #if !defined(LCDVERSION)          //no WS2812 LED on the touchscreen board
+  put_pixel(RED);
+  #endif
   Serial.println();
   Serial.print(p);
 
-  while(Serial.available() == 0);
+  while(Serial.available() == 0)
+  {
+     if(selChan == 255)
+      {
+        uint8_t newchannel = readChannelInputs();
+        if(newchannel != channel)
+       { 
+       return 0;     
+       }
+      }
+  }
   resp = Serial.read();
-  Serial.println(resp);
+   if(resp > 31) Serial.println(resp);
+  delay(100);
+  flushInput();
 
+  #if !defined(LCDVERSION)
+  put_pixel(BLUE);
+  #endif
   return resp;
 }
 
@@ -169,7 +205,7 @@ void enterOsc(void)
   Serial.print(refOsc , 10);
   Serial.print(" MHz\r\nEnter New Reference Oscillator Frequency in MHz --> ");
   oscFreq = inputFloat();
-  if ((oscFreq >= minOsc ) && (oscFreq <= maxOsc))
+  if ((oscFreq >= activeChip->minOsc) && (oscFreq <= activeChip->maxOsc))
     {
       refOsc = oscFreq;
     }
@@ -202,7 +238,7 @@ void enterRegs(void)
         Serial.println("Enter blank line to exit");
         Serial.println("Valid Register Numbers (See Chip Data Sheet) are:-");
         Serial.print("R0 to R");
-        Serial.println(numberOfRegs -1);
+        Serial.println(activeChip->numberOfRegs -1);
         Serial.println();
       }
     
@@ -227,7 +263,7 @@ void enterRegs(void)
            param = param.substring(1);   //remove the R character
            param.trim();
            regno = param.toInt();
-           if(regno < numberOfRegs)
+           if(regno < activeChip->numberOfRegs)
              {
              if(value.length() >0)
                {
@@ -248,7 +284,7 @@ void enterRegs(void)
       if(param[0] == '*')
         {
           Serial.println();
-          for(int i = 0 ;i < numberOfRegs; i++)
+          for(int i = 0 ;i < activeChip->numberOfRegs; i++)
           {
              Serial.print("R");
              Serial.print(i);
@@ -335,12 +371,20 @@ void setCwIdent(void)
 
 void setjtMode(void)
 {
+  if(activeChip->jtDisable)
+   {
+    Serial.println();
+    Serial.println("Digi Modes not available on this chip type");
+    Serial.println();
+    chanData[channel].jtMode = 0;
+    return;
+   }
   String jtModes[] = {"0 = None" , "1 = JT4G" , "2 = Q65_15A" , "3 = Q65_15B" , "4 = Q65_15C", "5 = Q65_30A" , "6 = Q65_30B" , "7 = Q65_30C", "8 = Q65_30D", "$$$"};
   String jtModesReduced[] = {"0 = None" , "1 = JT4G" , "$$$"};
   char resp;
   char maxresp;
   String jts;
-  if(jt4Only)
+  if(activeChip->jt4Only)
     {
       showMenu(jtModesReduced);
       maxresp = '1';
@@ -483,9 +527,18 @@ void viewNMEA(void)
 void mainMenu(void)
 {
   char resp;
+  uint8_t currentchan;
   double temp;
-  String menuList[] = {"T = Select Chip Type" , "O = Set Reference Oscillator Frequency" , "N = Set Channel Number" ,"     ", "D = Set Default Register Values for chip"  , "P = Enter PFD Frequency" ,"M = Set External Multiplier", "F = Enter Output Frequency" , "C = Calculate and display frequency from current settings" , "V = View / Enter Variables for Registers", "R = View / Enter Registers Directly in Hex" , "I = Configure CW Ident" ,"J = Configure Digi Mode" , "K = Configure External Key", "G = View GPS NMEA data", "S = Save to EEPROM" , "X = Exit Menu" , "$$$"};
-  String chipList[] = {"1 = MAX2870" , "2 = ADF4351" , "3 = LMX2595" , "4 = ADF5355", "$$$"};
+  String menuList[] = {"T = Select Chip Type" , "O = Set Reference Oscillator Frequency" , "N = Set Channel Number", "L = List all Channels" ,"     ", "D = Set Default Register Values for chip"  , "P = Enter PFD Frequency" ,"M = Set External Multiplier", "F = Enter Output Frequency" , "C = Calculate and display frequency from current settings" , "V = View / Enter Variables for Registers", "R = View / Enter Registers Directly in Hex" , "I = Configure CW Ident" ,"J = Configure Digi Mode" , "K = Configure External Key", "G = View GPS NMEA data", "S = Save to EEPROM" , "X = Exit Menu" , "$$$"};
+
+  //Built from chipTypeName() and sized from NUM_CHIP_TYPES, so a new chip type
+  //only needs adding to ChipList.h (see that file) to appear here too.
+  String chipList[NUM_CHIP_TYPES];
+  for(int n = 1 ; n < NUM_CHIP_TYPES ; n++)
+   {
+     chipList[n-1] = String(n) + " = " + chipTypeName(n);
+   }
+  chipList[NUM_CHIP_TYPES - 1] = "$$$";
 
    Serial.println("");
    Serial.print("G4EML Synthesiser Controller Version ");
@@ -495,7 +548,6 @@ void mainMenu(void)
    do
     {
       resp = getSelection("Enter Command (? for menu) -->");
-
       switch(resp)
       {
         case 'N':
@@ -518,10 +570,39 @@ void mainMenu(void)
         chipUpdate();
         break;
 
+        case 'L':
+        case 'l':
+        currentchan = channel;
+        Serial.println();
+        for(int i=0;i<NUMBEROFCHANNELS;i++)
+         {
+          channel = i;
+          initChannel();
+          chipUpdate();
+          Serial.print("Channel ");
+          Serial.print(i);
+          Serial.print( " = ");
+          Serial.print(chipGetFrequency(),10);        
+          Serial.println(" MHz");
+         }
+         channel = currentchan;
+         initChannel();
+         chipUpdate();
+        break;
+
         case 'S':
         case 's':
         saveSettings();
         Serial.println("\nSettings saved to RP2040 EEPROM");
+        if(activeChip->hasEepromBurn())
+         {
+         resp = getSelection("Do you also want to save the settings to the chip's own EEPROM? Y or N --->");
+         if((resp == 'Y') || (resp == 'y'))
+          {
+            activeChip->eepromBurn();
+          }
+         }
+
         break;
 
         case 'F':
@@ -568,33 +649,21 @@ void mainMenu(void)
         if ((resp != 'Y') & (resp != 'y')) break;
         showMenu(chipList);
         resp = getSelection("Enter Chip Type -->");
-        if((resp > '0') && (resp < '5'))
+        //Note: chip selection is entered as a single digit, so this scheme supports
+        //at most 9 chip types (NUM_CHIP_TYPES <= 10 including NONE).
+        if((resp > '0') && (resp < ('0' + NUM_CHIP_TYPES)))
         {
         chip = resp - '0';
         }
         Serial.print("Chip type is now ");
-        Serial.println(chipName[chip]);
-        channel = 0;
-        selChan = 0;
-        chanData[channel].fskMode = 0;
-        chanData[channel].jtMode = 0;
-        chipInit();
-        enterOsc();
+        Serial.println(chipTypeName(chip));
         changeChip();
-        chipSetFrequency(0);
-        chipEncodeRegs();
-        chipUpdate();
-        chipSetDefault();
-        for(int c=1 ; c < NUMBEROFCHANNELS;c++)
-          {
-            chanData[c] = chanData[0];
-          }
+        enterOsc();
         break;
 
         case 'R':
         case 'r':
         enterRegs();
-        chipDecodeRegs();
         break;
 
         case 'O':
@@ -617,9 +686,6 @@ void mainMenu(void)
         Serial.println("Default register values loaded.");
         chipInit();
         chipSetDefault();
-        chipSetFrequency(0);
-        chipEncodeRegs();
-        chipUpdate();
         break;
 
         case 'I':
@@ -648,27 +714,12 @@ void mainMenu(void)
         enterPfd();
         break;
 
-        default:
+        case '?':
         showMenu(menuList);
       }
 
     }
     while((resp != 'X')&&(resp != 'x'));
-}
-
-void changeChip(void)
-{
-    channel = 0;
-    selChan = 0;
-    chanData[channel].fskMode = 0;
-    chanData[channel].jtMode = 0;
-    chipInit();
-    chipSetDefault();
-    chipEncodeRegs();
-    for(int c=1 ; c < NUMBEROFCHANNELS;c++)
-      {
-        chanData[c] = chanData[0];
-      }
 }
 
 void enterPfd(void)
@@ -679,7 +730,7 @@ void enterPfd(void)
   bool freqOK;
   double oldpfd;
 
-  if( maxPfd == 0)
+  if( activeChip->maxPfd == 0)
    {
     Serial.println();
     Serial.println("PFD Cannot be changed on this chip type.");
@@ -701,17 +752,17 @@ void enterPfd(void)
        Serial.printf("\nEnter required PFD in MHz -->");
        pfd = inputFloat();
        if(pfd == 0) return;
-      if((pfd <= maxPfd) && (pfd >= minPfd))
+      if((pfd <= activeChip->maxPfd) && (pfd >= activeChip->minPfd))
         {
           freqOK = true;
         }
       else
         {
           Serial.print("\nPFD must be between ");
-          Serial.print(minPfd);
+          Serial.print(activeChip->minPfd);
           Serial.print(" MHz");
           Serial.print(" and ");
-          Serial.print(maxPfd);
+          Serial.print(activeChip->maxPfd);
           Serial.println(" MHz");
         }    
     }
@@ -816,3 +867,21 @@ bool paramUint32(String param , String name, uint32_t * var , String value , uin
 
 
 
+
+//Resets all channels to default and re-initialises for the currently selected "chip".
+//Called after "chip" is changed, whether from the serial menu ('T') or, in the LCD
+//project, the touchscreen config screen.
+void changeChip(void)
+{
+  channel = 0;
+  selChan = 0;
+  chanData[channel].fskMode = 0;
+  chanData[channel].jtMode = 0;
+  chipInit();
+  chipSetDefault();
+  chipEncodeRegs();
+  for(int c=1 ; c < NUMBEROFCHANNELS;c++)
+    {
+      chanData[c] = chanData[0];
+    }
+}
