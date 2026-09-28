@@ -17,8 +17,8 @@
 // Create 10 keys for the keypad
 char MEMkeyLabel[10][20];
 
-// Invoke the TFT_eSPI button class and create all the button objects
-TFT_eSPI_Button MEMkey[10];
+// Invoke the LovyanGFX button class and create all the button objects
+LGFX_Button MEMkey[10];
 
 //------------------------------------------------------------------------------------------
 int doMemPad(void) 
@@ -60,7 +60,7 @@ int doMemPad(void)
       for (uint8_t b = 0; b < 10; b++) 
       {
 
-        tft.setFreeFont(MEMLABEL_FONT);
+        tft.setFont(MEMLABEL_FONT);
 
         if (MEMkey[b].justPressed()) 
         {
@@ -88,7 +88,7 @@ void drawMempad()
     {
       uint8_t b = col *5 + row;
 
-      tft.setFreeFont(MEMLABEL_FONT);
+      tft.setFont(MEMLABEL_FONT);
 
       MEMkey[b].initButton(&tft, MEMKEY_X + col * (MEMKEY_W + MEMKEY_SPACING_X),
                         MEMKEY_Y + row * (MEMKEY_H + MEMKEY_SPACING_Y), // x, y, w, h, outline, fill, text

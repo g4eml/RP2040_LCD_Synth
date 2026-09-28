@@ -28,10 +28,10 @@ void drawLabel(int x, int y, const char* label, int colour, bool size)
   tft.setTextColor(colour);
   if (size) 
   {
-    tft.setFreeFont(&FreeSans18pt7b);
+    tft.setFont(&FreeSans18pt7b);
   } else 
   {
-    tft.setFreeFont(&FreeSans9pt7b);
+    tft.setFont(&FreeSans9pt7b);
   }
   tft.setTextDatum(CL_DATUM); 
   tft.drawString(label, x, y);
@@ -46,10 +46,10 @@ void drawTextBox(int x, int y, int w, int h, const char* text, bool cent, bool s
   tft.setTextColor(TFT_WHITE);
   if (size) 
   {
-    tft.setFreeFont(&FreeSans18pt7b);
+    tft.setFont(&FreeSans18pt7b);
   } else 
   {
-    tft.setFreeFont(&FreeSans9pt7b);
+    tft.setFont(&FreeSans9pt7b);
   }
   if(cent)
   {
@@ -105,13 +105,18 @@ bool getTouchDebounced(uint16_t *x, uint16_t *y)
   return true;
 }
 
+#define TOUCH_CAL_MAGIC 0x56      //marks valid LovyanGFX touch calibration data at EEPROM 4014-4029
+
 void touch_calibrate(bool force)
 {
-  uint16_t calData[5];
+  //LovyanGFX uses 8 calibration values (TFT_eSPI used 5), so the EEPROM
+  //marker was changed from 0x55 to 0x56. Any old TFT_eSPI calibration is
+  //ignored and a new calibration is run once on first boot.
+  uint16_t calData[8];
   uint8_t calDataOK = 0;
 
   // check if calibration exists
-  if (EEPROM.read(4095) == 0x55) 
+  if (EEPROM.read(4095) == TOUCH_CAL_MAGIC) 
     {   
       EEPROM.get(4014,calData);
       calDataOK = 1;
@@ -120,7 +125,7 @@ void touch_calibrate(bool force)
   if (calDataOK && !REPEAT_CAL && !force)
   {
     // calibration data valid
-    tft.setTouch(calData);
+    tft.setTouchCalibrate(calData);
   } 
   else 
   {
@@ -142,14 +147,16 @@ void touch_calibrate(bool force)
       tft.println("Set REPEAT_CAL to false to stop this running again!");
     }
 
+    tft.setTouchThreshold(TOUCH_Z_CALIBRATE);   // corners need a lower pressure threshold (as TFT_eSPI)
     tft.calibrateTouch(calData, TFT_MAGENTA, TFT_BLACK, 15);
+    tft.setTouchThreshold(TOUCH_Z_THRESHOLD);   // back to normal for everyday use
 
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
     tft.println("Calibration complete!");
 
     // store data at the top of the EEPROM
     EEPROM.put(4014,calData);
-    EEPROM.write(4095,0x55);
+    EEPROM.write(4095,TOUCH_CAL_MAGIC);
     EEPROM.commit();
   }
 
