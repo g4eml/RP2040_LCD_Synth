@@ -116,7 +116,7 @@ The RP2040 is programmed using the Arduino IDE with the Earl F. Philhower, III  
 1. From the Arduino IDE select (Tools > Manage Libraries)
 2. Search for 'JTEncode' Scroll down to find the Etherkit JTEncode library by Jason Milldrum.
 3. Click Install
-4. Now search for 'TFT_eSPI' and find the TFT graphics library by Bodmer.
+4. Now search for 'LovyanGFX' and find the TFT graphics library by lovyan03.
 5. Click Install
 
 #### Downloading the Software.
@@ -124,8 +124,6 @@ The RP2040 is programmed using the Arduino IDE with the Earl F. Philhower, III  
 1. Download the latest released source code .zip file from https://github.com/g4eml/RP2040_LCD_Synth/releases
 
 2. Save it to a convenient location and then unzip it.
-
-The TFT_eSPI Library is unusual in that it needs to be configured to the TFT display in use by modifying library files. The required modified versions of the files are located in the 'LCD-eSPI Settings' folder of this repository. Copy the files 'Setup_Elecraft_HMI.h' and 'User_Setup_Select.h' from the downloaded 'LCD-eSPI Settings' folder to your Arduino libraries directory. This will normaly be found at 'Documents/Arduino/libraries/TFT_eSPI'
 
 #### Programming the RP2040
 
