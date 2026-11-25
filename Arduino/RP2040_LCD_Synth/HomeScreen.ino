@@ -149,16 +149,9 @@ void displayVolts(void)
 
  bool homeScreenTouched(void)
  {
-  uint16_t raw = tft.getTouchRawZ();
-  if(raw > 300)
-  {
-    bool pressed = getTouchDebounced(&t_x, &t_y);
-    return pressed;
-  }
-  else
-  {
-    return false;
-  }
+  //LovyanGFX has no getTouchRawZ(); its XPT2046 driver already rejects
+  //readings without sufficient pressure, so just poll the touch directly.
+  return getTouchDebounced(&t_x, &t_y);
     
  }
 

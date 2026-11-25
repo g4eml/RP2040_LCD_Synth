@@ -31,15 +31,15 @@ uint8_t numberIndex = 0;
 
 // Create 15 keys for the keypad
 char keyLabel[15][5] = {"Clr", "Del", "-", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "Ent" };
-uint16_t keyColor[15] = {TFT_RED, TFT_DARKGREY, TFT_DARKGREY,
+int keyColor[15] = {TFT_RED, TFT_DARKGREY, TFT_DARKGREY,
                          TFT_BLUE, TFT_BLUE, TFT_BLUE,
                          TFT_BLUE, TFT_BLUE, TFT_BLUE,
                          TFT_BLUE, TFT_BLUE, TFT_BLUE,
                          TFT_BLUE, TFT_BLUE, TFT_DARKGREEN
                         };
 
-// Invoke the TFT_eSPI button class and create all the button objects
-TFT_eSPI_Button key[15];
+// Invoke the LovyanGFX button class and create all the button objects
+LGFX_Button key[15];
 
 
 //------------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ double getNumber(const char* prompt, uint8_t digits)
   //write Prompt
 
   tft.setTextDatum(TL_DATUM);        // Use top left corner as text coord datum
-  tft.setFreeFont(&FreeSans12pt7b);  // Choose a nice font that fits box
+  tft.setFont(&FreeSans12pt7b);  // Choose a nice font that fits box
   // Draw the string, the value returned is the width in pixels
   tft.setTextColor(TFT_CYAN);
   tft.drawString(prompt, PROMPT_X, PROMPT_Y);
@@ -89,8 +89,8 @@ double getNumber(const char* prompt, uint8_t digits)
       for (uint8_t b = 0; b < 15; b++) 
       {
 
-        if (b < 3) tft.setFreeFont(LABEL1_FONT);
-        else tft.setFreeFont(LABEL2_FONT);
+        if (b < 3) tft.setFont(LABEL1_FONT);
+        else tft.setFont(LABEL2_FONT);
 
         if (key[b].justReleased()) key[b].drawButton();     // draw normal
 
@@ -149,7 +149,7 @@ double getNumber(const char* prompt, uint8_t digits)
 void displayNumber(int colour)
 {
     tft.setTextDatum(TL_DATUM);        // Use top left corner as text coord datum
-    tft.setFreeFont(&FreeSans18pt7b);  // Choose a nice font that fits box
+    tft.setFont(&FreeSans18pt7b);  // Choose a nice font that fits box
     // Draw the string, the value returned is the width in pixels
     tft.setTextColor(colour);
     int xwidth = tft.drawString(numberBuffer, DISP_X + 4, DISP_Y + 12);
@@ -172,8 +172,8 @@ void drawKeypad()
     {
       uint8_t b = col + row * 3;
 
-      if (b < 3) tft.setFreeFont(LABEL1_FONT);
-      else tft.setFreeFont(LABEL2_FONT);
+      if (b < 3) tft.setFont(LABEL1_FONT);
+      else tft.setFont(LABEL2_FONT);
 
       key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
                         KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text

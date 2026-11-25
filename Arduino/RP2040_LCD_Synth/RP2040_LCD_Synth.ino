@@ -131,7 +131,7 @@ bool lastKeyState = 1;                 //external key state last pass 1 = key up
 #define GPSTXPin 0                      //Serial data to GPS module 
 #define GPSRXPin 1                      //SeriaL data from GPS module
 
-//The touchscreen board's TFT_eSPI wiring uses GPIO 10-14, so channel select and
+//The touchscreen board's display/touch SPI wiring uses GPIO 8-16, so channel select and
 //external key use different pins here than on the non-LCD board.
 #define CHANSEL0Pin 19                  //External channel select pins. Pulled up to 3V3. High is Logic 0 Low is Logic 1
 #define CHANSEL1Pin 20
@@ -153,8 +153,8 @@ bool showSync=false;
 bool showingGPS = false;
 int gpstimeout =0;
 
-#include <TFT_eSPI.h>      // Hardware-specific library. Must be pre-configured for this display and touchscreen
-TFT_eSPI tft = TFT_eSPI(); // Invoke custom library
+#include "LGFX_Config.h"   // LovyanGFX display/touch configuration for this hardware (see LGFX_Config.h)
+LGFX tft;                   // Display and touch object
 // Set REPEAT_CAL to true instead of false to run calibration again, otherwise it will only be done once.
 #define REPEAT_CAL false
 uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
@@ -211,6 +211,7 @@ void setup()
 
   tft.init();
   tft.setRotation(1);
+  tft.setBrightness(255);             // backlight fully on (TFT_eSPI did this automatically in init())
   if(homeScreenTouched())
    {
     while(homeScreenTouched());

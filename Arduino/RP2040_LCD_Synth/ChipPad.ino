@@ -12,7 +12,7 @@
 #define CHIPPAD_SPACING 10            //vertical gap between buttons
 #define CHIPPAD_FONT &FreeSansBold12pt7b
 
-TFT_eSPI_Button chipKey[NUM_CHIP_TYPES - 1];     //one button per real chip type (excludes NONE)
+LGFX_Button chipKey[NUM_CHIP_TYPES - 1];     //one button per real chip type (excludes NONE)
 
 //------------------------------------------------------------------------------------------
 uint8_t doChipSelect(void)
@@ -22,7 +22,7 @@ uint8_t doChipSelect(void)
   int keyH = (CHIPPAD_BOTTOM - CHIPPAD_TOP - (n - 1) * CHIPPAD_SPACING) / n;
 
   tft.fillRect(0, 0, 480, 320, TFT_DARKGREY);
-  tft.setFreeFont(CHIPPAD_FONT);
+  tft.setFont(CHIPPAD_FONT);
 
   for(uint8_t i = 0; i < n; i++)
   {
